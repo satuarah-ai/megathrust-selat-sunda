@@ -4,7 +4,7 @@ Simulasi fisika terbuka tentang apa yang terjadi bila zona subduksi di barat day
 pecah sepanjang 1.454 km sekaligus: rupture, deformasi dasar laut, perambatan tsunami,
 guncangan tanah, likuefaksi, dan paparan penduduk di 105 juta jiwa — dengan fokus pada Jabodetabek.
 
-**Halaman langsung:** _(isi setelah GitHub Pages aktif)_
+**Halaman langsung: https://satuarah-ai.github.io/megathrust-selat-sunda/**
 
 > **Ini skenario, bukan prakiraan.** Tidak ada gempa Mw 9,5 yang sedang berlangsung.
 > BMKG dan Pusgen menaksir magnitudo maksimum segmen Selat Sunda di angka **8,7**;
