@@ -1340,12 +1340,17 @@ const canGz=typeof DecompressionStream!=='undefined';
 async function loadAll(onProg){
   const B={}; let done=0;
   await Promise.all(GRIDS.map(async ([name,len,bytes,roww])=>{
-    let raw;
+    let raw=null;
     if(window.__BIN&&window.__BIN[name]) raw=await gunzip(b64buf(window.__BIN[name]));
     else{
-      let r=canGz?await fetch('data/'+name+'.gz'):null;
-      if(r&&r.ok) raw=await gunzip(new Uint8Array(await r.arrayBuffer()));
-      else{ const r2=await fetch('data/'+name+'.bin');
+      if(canGz){ try{
+        const r=await fetch('data/'+name+'.gz');
+        if(r.ok){ const u=new Uint8Array(await r.arrayBuffer());
+          // sebagian server membongkar .gz sendiri; kenali dari sidik jari 1f 8b
+          raw=(u[0]===0x1f&&u[1]===0x8b)? await gunzip(u) : u; }
+      }catch(e){ raw=null; } }
+      if(!raw||raw.length<len*bytes){            // cadangan tanpa kompresi
+        const r2=await fetch('data/'+name+'.bin');
         if(!r2.ok) throw new Error('gagal memuat '+name);
         raw=new Uint8Array(await r2.arrayBuffer()); }
     }
