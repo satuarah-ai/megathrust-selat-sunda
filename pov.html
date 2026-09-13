@@ -564,7 +564,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.6));
 renderer.setSize(innerWidth,innerHeight,false);
 renderer.toneMapping=T.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0;
 const scene=new T.Scene();
-const camera=new T.PerspectiveCamera(62,innerWidth/innerHeight,0.15,3400);
+const camera=new T.PerspectiveCamera(innerWidth<innerHeight?80:62,innerWidth/innerHeight,0.15,3400);
 const FOG_UDARA=new T.Color(0x9fb8c4), FOG_AIR=new T.Color(0x24606b), FOG_BADAI=new T.Color(0x6f8390);
 scene.fog=new T.Fog(FOG_UDARA.getHex(),320,2400);
 scene.background=new T.Color(FOG_UDARA.getHex());
@@ -608,7 +608,7 @@ const groundMat=new T.ShaderMaterial({uniforms:gU,vertexColors:true,
     'uniform vec3 fogColor; uniform float fogNear,fogFar; uniform vec3 uSun;',
     'varying vec3 vC; varying vec3 vN; varying float vFiss; varying float vDist;',
     'void main(){',
-    '  float l=0.58+0.55*max(dot(normalize(vN),uSun),0.0);',
+    '  float l=0.72+0.5*max(dot(normalize(vN),uSun),0.0);',
     '  vec3 c=vC*l;',
     '  c=mix(c,vec3(0.06,0.05,0.04),clamp(vFiss*1.6,0.0,0.9));',
     '  float fg=smoothstep(fogNear,fogFar,vDist);',
@@ -627,7 +627,7 @@ function buildGround(elev,look,rnd){
   const g=new T.PlaneGeometry(Sz,Sz,N,N); g.rotateX(-Math.PI/2);
   const pos=g.attributes.position,col=[];
   const cSand=new T.Color(0xd9c9a4),cSoil=new T.Color(0x7e8c5a),
-        cRoad=new T.Color(0x4a5157),cDark=new T.Color(0x55603f);
+        cRoad=new T.Color(0x7b8188),cDark=new T.Color(0x66704a);
   for(let i=0;i<pos.count;i++){
     const x=pos.getX(i),z=pos.getZ(i);
     let y=groundYAt(z,elev);
@@ -635,8 +635,8 @@ function buildGround(elev,look,rnd){
     pos.setY(i,y);
     const c=new T.Color();
     if(z<SHORE+10) c.copy(cSand);
-    else if(Math.abs(x)<9) c.copy(cRoad);
-    else if(Math.abs((Math.abs(x)-9)%90)<6) c.copy(cRoad);
+    else if(Math.abs(x)<5.5) c.copy(cRoad);
+    else if(Math.abs((Math.abs(x)-5.5)%90)<5) c.copy(cRoad);
     else c.copy(cSoil).lerp(cSand,look.pasir*0.5);
     c.lerp(cDark,clamp((y-elev)*0.05,0,0.3));
     const j=0.93+rnd()*0.14; col.push(c.r*j,c.g*j,c.b*j);
@@ -906,17 +906,24 @@ function buildTown(key,elev){
   const tin=[0xa8483a,0x8c6a4a,0x6f7d7a,0x9aa0a3,0x7a5a46];
   const wl=[0xd8d3c6,0xc9c2b2,0xe2ddd0,0xb9b3a4,0xcfd4d2];
   const walls=[],roofs=[];
+  // rencana tapak: (1) deret rumah menghadap jalan di kedua sisi, rapat, (2) sisanya tersebar di belakang
+  const plan=[];
+  for(let side=-1;side<=1;side+=2) for(let z=SHORE+14; z<CAM_Z+150; z+=8.6+rnd()*2.2){
+    if(Math.abs(z-CAM_Z)<16) continue;
+    plan.push({z:z+(rnd()-0.5)*1.5, x:side*(9.6+rnd()*1.6), w:6+rnd()*2.5, dp:7+rnd()*4, tier:rnd()<0.8?0:1, ry:side>0?0:Math.PI});
+  }
   for(let i=0;i<look.rumah;i++){
-    const far=rnd();
-    const z=SHORE+10+rnd()*500;
-    const side=rnd()<0.5?-1:1;
-    const x=side*(12+Math.pow(rnd(),0.8)*280);
-    const tier=far<0.55?0:far<0.82?1:far<0.95?2:3;
+    const far=rnd(), side=rnd()<0.5?-1:1;
+    plan.push({z:SHORE+10+rnd()*500, x:side*(22+Math.pow(rnd(),1.1)*270), w:4+rnd()*7, dp:4+rnd()*8,
+      tier:far<0.55?0:far<0.82?1:far<0.95?2:3, ry:(rnd()-0.5)*0.35});
+  }
+  for(const pl of plan){
+    const z=pl.z, x=pl.x, tier=pl.tier;
     const h=look.tinggi[tier]*(0.82+rnd()*0.45);
-    const w=4+rnd()*7, dp=4+rnd()*8, gy=groundYAt(z,elev);
+    const w=pl.w, dp=pl.dp, gy=groundYAt(z,elev);
     const k=h<6?0:(h<12?1:2);
     const c=new T.Color(wl[(rnd()*wl.length)|0]).multiplyScalar(0.85+rnd()*0.3);
-    const b={x,z,w,h,dp,gy,k,c,ry:(rnd()-0.5)*0.35,
+    const b={x,z,w,h,dp,gy,k,c,ry:pl.ry,
       capA:KELAS[k].medA*Math.exp(KELAS[k].betA*gauss(rnd)),
       capD:KELAS[k].medD*Math.exp(KELAS[k].betD*gauss(rnd)),
       tilt:(rnd()-0.5)*0.9, twist:(rnd()-0.5)*0.7, st:0, t0:0, wi:walls.length, ri:-1};
@@ -948,7 +955,7 @@ function buildTown(key,elev){
   }
   addInstanced(new T.CylinderGeometry(0.22,0.42,1,6),new T.MeshLambertMaterial({color:0x6b5a41}),tr);
   addInstanced(new T.ConeGeometry(0.85,4.6,4,1,true),new T.MeshLambertMaterial({color:0x3f6b34,side:T.DoubleSide}),frd);
-  const po=[]; for(let i=0;i<22;i++){ const z=SHORE+18+i*24,x=(i%2?1:-1)*10.5; po.push({x,y:groundYAt(z,elev)+4.5,z,sy:9}); }
+  const po=[]; for(let i=0;i<22;i++){ const z=SHORE+18+i*24,x=(i%2?1:-1)*6.8; po.push({x,y:groundYAt(z,elev)+4.5,z,sy:9}); }
   addInstanced(new T.CylinderGeometry(0.16,0.2,1,5),new T.MeshLambertMaterial({color:0x8b8478}),po);
   const bo=[]; for(let i=0;i<look.perahu;i++){ const z=SHORE-25-rnd()*160,x=(rnd()-0.5)*440;
     bo.push({x,y:-0.4,z,sx:1.4+rnd()*0.9,sy:1.2,sz:4+rnd()*4,ry:rnd()*3.14,c:new T.Color().setHSL(rnd(),0.55,0.55)}); }
@@ -962,10 +969,10 @@ function buildTown(key,elev){
   addInstanced(new T.SphereGeometry(0.12,8,6),new T.MeshLambertMaterial({color:0x8d6a4f}),hd);
   const gy0=groundYAt(CAM_Z-7,elev);
   const pole=new T.Mesh(new T.CylinderGeometry(0.13,0.13,16,8),new T.MeshLambertMaterial({color:0xf2f2f2}));
-  pole.position.set(2.6,gy0+8,CAM_Z-7); world.add(pole); props.push(pole);
+  pole.position.set(7.4,gy0+8,CAM_Z-9); world.add(pole); props.push(pole);
   [[1.65,0xff5f4d],[2.5,0xffc800],[5,0xff9100],[10,0xff3020]].forEach(function(a){
     const r=new T.Mesh(new T.BoxGeometry(1.05,0.17,0.17),new T.MeshBasicMaterial({color:a[1]}));
-    r.position.set(2.6,gy0+a[0],CAM_Z-7); world.add(r); props.push(r); });
+    r.position.set(7.4,gy0+a[0],CAM_Z-9); world.add(r); props.push(r); });
 }
 
 /* ---------- keadaan bangunan ---------- */
@@ -1115,7 +1122,7 @@ function render(dtReal){
     camera.lookAt(0,-2,SHORE-60);
   } else {
     camera.rotation.order='YXZ';
-    camera.position.set(world.position.x, ghCam+1.65+world.position.y, CAM_Z+world.position.z);
+    camera.position.set(4.2+world.position.x, ghCam+1.65+world.position.y, CAM_Z+world.position.z);
     camera.rotation.set(-0.055+clamp(-sz.a/G,-0.3,0.3)*0.5*sway*0.6,
       clamp(sx.a/G,-0.3,0.3)*0.10*sway, clamp(-sx.a/G,-0.3,0.3)*0.40*sway*0.6);
   }
@@ -1222,7 +1229,7 @@ $('#speed').addEventListener('change',function(e){ speed=+e.target.value; });
 $('#elevS').addEventListener('input',function(e){ userElev=+e.target.value; $('#elevV').textContent=nf(userElev)+' m'; buildTown(S.key,userElev); render(0.016); });
 $('#swayS').addEventListener('input',function(e){ sway=(+e.target.value)/10; $('#swayV').textContent=nf(sway,1)+'×'; });
 $('#site').addEventListener('change',function(e){ for(const k in seen) seen[k]=false; loadSite(e.target.value); setPlay(playing); });
-addEventListener('resize',function(){ renderer.setSize(innerWidth,innerHeight,false); camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+addEventListener('resize',function(){ renderer.setSize(innerWidth,innerHeight,false); camera.aspect=innerWidth/innerHeight; camera.fov=innerWidth<innerHeight?80:62; camera.updateProjectionMatrix();
   dustPts.material.uniforms.uScale.value=innerHeight*0.9; render(0.016); },{passive:true});
 
 $('#site').innerHTML=D.site.map(function(s){return '<option value="'+s.key+'">'+s.nama+'</option>';}).join('');
@@ -1241,6 +1248,7 @@ window.__STEP=function(dt,opts){            // untuk ekspor video: satu bingkai 
   speedNow=Math.max(0.01,dt/(1/24)); tSim+=dt; render(1/24);
   return {t:tSim,ruin:ruinFrac};
 };
+window.__SCENE={scene:scene,world:world,camera:camera,nearWater:nearWater,ground:function(){return groundMesh;},frag:function(){return fragMesh;},groundMat:groundMat};
 window.__DIAG=function(){ let mn=1e9,mx=-1e9,wet=0,nanN=0; for(let k=0;k<LN*LN;k++){ const e=FL.eta[k];
     if(e!==e){nanN++;continue;} if(e<mn)mn=e; if(e>mx)mx=e; if(FL.h[k]-FL.obst[k]+e>0.03) wet++; }
   let ymn=1e9,ymx=-1e9; for(let k=0;k<nearPos.count;k++){ const y=nearPos.getY(k); if(y<ymn)ymn=y; if(y>ymx)ymx=y; }
