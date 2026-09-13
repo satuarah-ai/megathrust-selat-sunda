@@ -60,8 +60,23 @@ function buildGM(s){
   const x=synthComponent(s.pga,s.pgv,s.durasi,s.seed||1337,1.0);
   const z=synthComponent(s.pga,s.pgv,s.durasi,(s.seed||1337)+91,1.0);
   const y=synthComponent(s.pga,s.pgv,s.durasi,(s.seed||1337)+457,0.55);
-  return {x,z,y,total:x.total,dt:x.dt,
+  // puncak resultan yang PERNAH dialami sampai waktu t.
+  // Bangunan runtuh bila puncak ini melampaui kapasitasnya - bukan
+  // percepatan sesaat - sehingga hasilnya tidak bergantung pada
+  // kerapatan bingkai maupun lompatan waktu.
+  const n=Math.min(x.n,z.n), run=new Float32Array(n);
+  let m=0;
+  for(let i=0;i<n;i++){ const r=Math.hypot(x.a[i],z.a[i]); if(r>m)m=r; run[i]=m; }
+  // resultan dua komponen bisa melebihi PGA; setarakan agar puncaknya = PGA
+  const norm=(s.pga*9.80665)/(m||1);
+  for(let i=0;i<n;i++) run[i]*=norm;
+  return {x,z,y,total:x.total,dt:x.dt,run,runN:n,
     peakDisp:Math.max(x.peakD,z.peakD)};
+}
+function peakGM(c,t){                 // puncak percepatan (g) sampai waktu t
+  if(t<=0) return 0;
+  const i=Math.min(c.runN-1,Math.floor(t/c.dt));
+  return c.run[i]/9.80665;
 }
 function sampleGM(c,t){                 // interpolasi linear
   const f=t/c.dt, i=f|0;
@@ -177,6 +192,6 @@ const AU={
     }
   }
 };
-window.__POVLIB={synthComponent,buildGM,sampleGM,AU,mulberry32,clamp,nf,romOf,hhmmss,$};
+window.__POVLIB={synthComponent,buildGM,sampleGM,peakGM,AU,mulberry32,clamp,nf,romOf,hhmmss,$};
 })();
 </script>

@@ -1,15 +1,14 @@
 <canvas id="stage"></canvas>
 <div id="veil"></div>
-
 <div id="toast"><b></b><span></span></div>
 
 <div class="hud">
   <div class="bar">
     <div class="card title">
-      <b id="locName">Jakarta Utara</b>
+      <b id="locName">Labuan</b>
       <span id="locDesc">memuat…</span>
     </div>
-    <div class="card" style="text-align:right">
+    <div class="card clockcard">
       <div class="clock" id="clock">T + 00:00:00</div>
       <div class="phase" id="phase">menunggu</div>
     </div>
@@ -18,46 +17,59 @@
   <div class="mid">
     <div class="card readout">
       <div class="ro"><span class="k">Guncangan MMI</span><span class="v" id="roMmi">–</span></div>
-      <div class="ro"><span class="k">Percepatan kini</span><span class="v" id="roAcc">0,000 <small>g</small></span></div>
-      <div class="ro"><span class="k">Geser tanah</span><span class="v" id="roDisp">0 <small>cm</small></span></div>
-      <canvas id="accTrace" width="236" height="68"></canvas>
+      <div class="ro"><span class="k">Percepatan</span><span class="v" id="roAcc">0,000 <small>g</small></span></div>
+      <div class="ro"><span class="k">Bangunan runtuh</span><span class="v" id="roRuin">0 <small>%</small></span></div>
+      <canvas id="accTrace" width="236" height="60"></canvas>
     </div>
-    <div class="card readout" style="text-align:right">
+    <div class="card readout right">
       <div class="ro"><span class="k">Muka air laut</span><span class="v" id="roSea">0,0 <small>m</small></span></div>
       <div class="ro"><span class="k">Air di kakimu</span><span class="v" id="roDepth">kering</span></div>
       <div class="ro"><span class="k">Air datang</span><span class="v" id="roEta">–</span></div>
     </div>
   </div>
 
-  <div class="ctl">
-    <div class="row">
+  <div class="dock">
+    <div class="sliders">
       <div class="sl">
         <label>Ketinggian tempatmu <b id="elevV">2 m</b></label>
         <input type="range" id="elevS" min="0" max="30" step="1" value="2" aria-label="Ketinggian tanah tempatmu berdiri">
       </div>
       <div class="sl">
-        <label>Goyangan terasa <b id="swayV">1,0×</b></label>
-        <input type="range" id="swayS" min="10" max="40" step="1" value="18" aria-label="Penguat goyangan yang terasa">
+        <label>Goyangan terasa <b id="swayV">1,8×</b></label>
+        <input type="range" id="swayS" min="0" max="40" step="1" value="18" aria-label="Penguat goyangan yang terasa">
       </div>
     </div>
-    <div class="row">
-      <button class="btn pri" id="start">Mulai</button>
-      <button class="btn" id="pause" disabled>Jeda</button>
-      <button class="btn" id="toWave" disabled>Lompat ke air datang</button>
-      <button class="btn" id="sound" aria-pressed="true">Suara: nyala</button>
-      <input type="range" class="scrub" id="scrub" min="0" max="1000" value="0" disabled aria-label="Geser waktu">
-      <div class="selwrap">
-        <select id="site" aria-label="Pilih lokasi"></select>
-      </div>
-      <div class="selwrap">
+    <input type="range" class="scrub" id="scrub" min="0" max="1000" value="0" aria-label="Geser waktu">
+    <div class="acts">
+      <button class="btn pri" id="start">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        <span>Ulang</span></button>
+      <button class="btn" id="pause">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        <span>Jeda</span></button>
+      <button class="btn" id="toWave">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3"/><path d="M2 20c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3"/><path d="M12 3v6M9 6l3-3 3 3"/></svg>
+        <span>Lompat</span></button>
+      <button class="btn" id="view" aria-pressed="false">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6-9 6z"/><path d="M3 15l9 6 9-6"/></svg>
+        <span>Udara</span></button>
+    </div>
+    <div class="opts">
+      <button class="btn sm" id="sound" aria-pressed="true">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 8.5a5 5 0 0 1 0 7"/></svg>
+        <span>Suara</span></button>
+      <span class="selwrap sm">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+        <select id="site" aria-label="Pilih lokasi"></select></span>
+      <span class="selwrap sm">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
         <select id="speed" aria-label="Kecepatan waktu">
-          <option value="1">1× waktu nyata</option>
-          <option value="10">10×</option>
-          <option value="60" selected>60×</option>
-          <option value="300">300×</option>
-        </select>
-      </div>
-      <a class="btn" href="index.html">← Peta &amp; angka</a>
+          <option value="1">1×</option><option value="10">10×</option>
+          <option value="60" selected>60×</option><option value="300">300×</option>
+        </select></span>
+      <a class="btn sm" href="index.html">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>
+        <span>Peta</span></a>
     </div>
   </div>
 </div>
@@ -66,18 +78,18 @@
   <div class="ibox">
     <p class="eyebrow">Sudut pandang orang pertama · Mw 9,5 Selat Sunda</p>
     <h1>Berdiri di sana saat itu terjadi</h1>
-    <p>Ini bukan animasi karangan. Guncangan yang akan kamu rasakan dibangkitkan dari
-      <strong>percepatan tanah hasil perhitungan</strong> di titik itu, berlangsung selama
-      <strong>durasi sungguhan</strong> yang dihitung model. Air naik mengikuti
-      <strong>mareogram dari solver tsunami</strong> — tinggi dan waktunya apa adanya.</p>
+    <p>Guncangan yang akan kamu rasakan dibangkitkan dari <strong>percepatan tanah hasil
+      perhitungan</strong> di titik itu, selama <strong>durasi sungguhan</strong> model.
+      Bangunan runtuh menurut <strong>kurva kerentanan</strong> — pada MMI IX sekitar empat dari
+      sepuluh rumah non-rekayasa ambruk. Air naik mengikuti <strong>mareogram solver tsunami</strong>.</p>
     <div class="grid2" id="introFigs"></div>
-    <p class="note">Suara disintesis dari data yang sama: gemuruh mengikuti percepatan tanah,
-      sirene menyala setelah guncangan reda, deru tsunami menguat seiring gelombang mendekat.
-      Pakai earphone kalau ada — sebagian besar energinya di frekuensi rendah.</p>
-    <p class="note"><strong style="color:var(--warn)">Peringatan:</strong> guncangan layar dan
-      suara frekuensi rendah bisa memicu mual, pusing, atau kecemasan. Kalau kamu punya riwayat
-      epilepsi fotosensitif, vertigo, atau trauma bencana, sebaiknya lewati halaman ini.
-      Tombol jeda selalu tersedia, dan goyangan bisa dikecilkan sampai nol.</p>
+    <p class="note">Suara disintesis dari data yang sama. Pakai earphone kalau ada — sebagian besar
+      energinya di frekuensi rendah. Tombol <b>Dari udara</b> memperlihatkan gelombang menggulung
+      dari laut ke darat.</p>
+    <p class="note"><strong style="color:var(--warn)">Peringatan:</strong> guncangan layar, suara
+      frekuensi rendah, dan gambaran kehancuran. Bisa memicu mual, pusing, atau kecemasan. Kalau kamu
+      punya riwayat epilepsi fotosensitif, vertigo, atau trauma bencana, sebaiknya lewati halaman ini.
+      Goyangan bisa dikecilkan sampai nol.</p>
     <div class="row">
       <button class="btn pri" id="go">Saya paham, mulai</button>
       <a class="btn" href="index.html">Kembali ke peta</a>

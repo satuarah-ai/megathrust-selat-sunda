@@ -52,7 +52,7 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
 .phase{font-family:IBM Plex Mono,monospace;font-size:10.5px;letter-spacing:.12em;
   text-transform:uppercase;color:#8fb3c2;margin-top:1px}
 
-.mid{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none}
+.mid{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none;overflow:hidden}
 .mid > *{pointer-events:auto}
 .readout{display:grid;gap:7px;min-width:118px}
 .ro{display:grid;gap:1px}
@@ -61,32 +61,49 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
 .ro .v{font-family:IBM Plex Mono,monospace;font-size:16px;font-weight:600;line-height:1.15;
   font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .ro .v small{font-size:.58em;font-weight:500;color:#8fb3c2;letter-spacing:0}
-#accTrace{display:block;width:118px;height:34px;border-radius:4px;background:rgba(10,26,38,.7)}
+#accTrace{display:block;width:118px;height:30px;border-radius:4px;background:rgba(10,26,38,.7)}
 
-/* ---- kontrol bawah ---- */
-.ctl{display:grid;gap:8px}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.btn{appearance:none;border:1px solid rgba(120,180,200,.3);background:rgba(10,26,38,.86);
-  color:var(--ink);font:600 13px/1 Archivo,sans-serif;padding:10px 14px;border-radius:8px;
-  cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:42px;white-space:nowrap;
-  backdrop-filter:blur(8px)}
+/* ---- dok kontrol bawah ---- */
+.dock{display:grid;gap:6px;background:rgba(6,16,24,.88);border:1px solid rgba(120,180,200,.24);
+  border-radius:12px;backdrop-filter:blur(10px);padding:9px 10px}
+.sliders{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dock{padding:8px 9px}
+.sl{display:grid;gap:2px;min-width:0}
+.sl label{font-family:IBM Plex Mono,monospace;font-size:9.5px;letter-spacing:.07em;
+  text-transform:uppercase;color:#8fb3c2;display:flex;justify-content:space-between;gap:6px;
+  white-space:nowrap;overflow:hidden}
+.sl label b{color:var(--accent2);font-weight:600}
+.sl input{width:100%;accent-color:var(--accent);height:20px;margin:0}
+.scrub{width:100%;accent-color:var(--accent);height:20px;margin:0}
+.acts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.btn{appearance:none;border:1px solid rgba(120,180,200,.28);background:rgba(14,32,45,.9);
+  color:var(--ink);font:600 12.5px/1.15 Archivo,sans-serif;padding:9px 6px;border-radius:9px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;min-height:42px;
+  text-decoration:none;min-width:0}
+.btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn svg{flex:0 0 auto}
 .btn:hover{border-color:var(--accent);color:var(--accent2)}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn.pri{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
 .btn.pri:hover{background:var(--accent2);color:var(--onaccent)}
+.btn[aria-pressed=true]:not(.pri){border-color:var(--accent);color:var(--accent2);
+  background:rgba(46,196,214,.14)}
 .btn[disabled]{opacity:.4;cursor:not-allowed}
-.scrub{flex:1 1 160px;min-width:110px;accent-color:var(--accent);height:26px}
-select{appearance:none;border:1px solid rgba(120,180,200,.3);background:rgba(10,26,38,.86);
-  color:var(--ink);font:500 13px/1 Archivo,sans-serif;padding:10px 30px 10px 12px;border-radius:8px;
-  min-height:42px;cursor:pointer;backdrop-filter:blur(8px)}
-.selwrap{position:relative;display:inline-flex}
-.selwrap::after{content:"";position:absolute;right:12px;top:50%;width:6px;height:6px;pointer-events:none;
+.btn.sm{font-size:11.5px;font-weight:500;min-height:38px;padding:7px 5px;gap:5px}
+.selwrap{position:relative;display:flex;align-items:center;gap:5px;min-width:0;
+  border:1px solid rgba(120,180,200,.28);background:rgba(14,32,45,.9);border-radius:9px;
+  padding-left:8px;color:#8fb3c2}
+.selwrap.sm{min-height:38px}
+.selwrap select{appearance:none;border:0;background:transparent;color:var(--ink);
+  font:500 11.5px/1 Archivo,sans-serif;padding:7px 20px 7px 0;cursor:pointer;min-width:0;
+  width:100%;text-overflow:ellipsis}
+.selwrap::after{content:"";position:absolute;right:8px;top:50%;width:5px;height:5px;pointer-events:none;
   border-right:1.6px solid #8fb3c2;border-bottom:1.6px solid #8fb3c2;transform:translateY(-70%) rotate(45deg)}
-.sl{display:grid;gap:3px;min-width:130px;flex:1 1 130px}
-.sl label{font-family:IBM Plex Mono,monospace;font-size:9.5px;letter-spacing:.08em;
-  text-transform:uppercase;color:#7f9dab;display:flex;justify-content:space-between;gap:8px}
-.sl label b{color:var(--accent2);font-weight:600}
-.sl input{width:100%;accent-color:var(--accent);height:22px;margin:0}
+.selwrap select:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-radius:6px}
+.clockcard{text-align:right}
+.readout.right{text-align:right}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
 /* ---- panel pembuka ---- */
 #intro{position:fixed;inset:0;z-index:20;background:rgba(4,11,17,.94);backdrop-filter:blur(10px);
@@ -122,16 +139,25 @@ select{appearance:none;border:1px solid rgba(120,180,200,.3);background:rgba(10,
   border-radius:50%;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 
-@media(max-width:620px){
-  .hud{padding:8px;gap:8px}
-  .card{padding:7px 9px}
-  .readout{min-width:96px}
-  .ro .v{font-size:14px}
-  #accTrace{width:96px;height:28px}
-  .clock{font-size:15px}
-  .btn{padding:9px 12px;font-size:12.5px}
-  .sl{min-width:110px}
+@media(max-width:400px){
+  .hud{padding:7px;gap:7px}
+  .card{padding:6px 8px}
+  .readout{min-width:88px;gap:5px}
+  .ro .k{font-size:8.5px;letter-spacing:.06em}
+  .ro .v{font-size:13px}
+  #accTrace{width:88px;height:24px}
+  .clock{font-size:14px}
+  .title b{font-size:13px}
+  .title span{font-size:9.5px}
+  .acts{grid-template-columns:repeat(2,1fr)}
+  .opts{grid-template-columns:repeat(2,1fr)}
+  .btn{font-size:12px;min-height:44px}
+  .btn.sm{min-height:40px;font-size:11px}
 }
+@media(max-width:360px){ .sliders{grid-template-columns:1fr} }
+@media(max-height:820px){ .dock{gap:5px;padding:7px 8px} .btn{min-height:40px}
+  .btn.sm{min-height:36px} .sl input,.scrub{height:18px} }
+@media(min-height:0px) and (max-height:560px){ .mid{display:none} }
 @media(prefers-reduced-motion:reduce){.spin{animation:none}}
 </style>
 
@@ -139,16 +165,15 @@ select{appearance:none;border:1px solid rgba(120,180,200,.3);background:rgba(10,
 <body>
 <canvas id="stage"></canvas>
 <div id="veil"></div>
-
 <div id="toast"><b></b><span></span></div>
 
 <div class="hud">
   <div class="bar">
     <div class="card title">
-      <b id="locName">Jakarta Utara</b>
+      <b id="locName">Labuan</b>
       <span id="locDesc">memuat…</span>
     </div>
-    <div class="card" style="text-align:right">
+    <div class="card clockcard">
       <div class="clock" id="clock">T + 00:00:00</div>
       <div class="phase" id="phase">menunggu</div>
     </div>
@@ -157,46 +182,59 @@ select{appearance:none;border:1px solid rgba(120,180,200,.3);background:rgba(10,
   <div class="mid">
     <div class="card readout">
       <div class="ro"><span class="k">Guncangan MMI</span><span class="v" id="roMmi">–</span></div>
-      <div class="ro"><span class="k">Percepatan kini</span><span class="v" id="roAcc">0,000 <small>g</small></span></div>
-      <div class="ro"><span class="k">Geser tanah</span><span class="v" id="roDisp">0 <small>cm</small></span></div>
-      <canvas id="accTrace" width="236" height="68"></canvas>
+      <div class="ro"><span class="k">Percepatan</span><span class="v" id="roAcc">0,000 <small>g</small></span></div>
+      <div class="ro"><span class="k">Bangunan runtuh</span><span class="v" id="roRuin">0 <small>%</small></span></div>
+      <canvas id="accTrace" width="236" height="60"></canvas>
     </div>
-    <div class="card readout" style="text-align:right">
+    <div class="card readout right">
       <div class="ro"><span class="k">Muka air laut</span><span class="v" id="roSea">0,0 <small>m</small></span></div>
       <div class="ro"><span class="k">Air di kakimu</span><span class="v" id="roDepth">kering</span></div>
       <div class="ro"><span class="k">Air datang</span><span class="v" id="roEta">–</span></div>
     </div>
   </div>
 
-  <div class="ctl">
-    <div class="row">
+  <div class="dock">
+    <div class="sliders">
       <div class="sl">
         <label>Ketinggian tempatmu <b id="elevV">2 m</b></label>
         <input type="range" id="elevS" min="0" max="30" step="1" value="2" aria-label="Ketinggian tanah tempatmu berdiri">
       </div>
       <div class="sl">
-        <label>Goyangan terasa <b id="swayV">1,0×</b></label>
-        <input type="range" id="swayS" min="10" max="40" step="1" value="18" aria-label="Penguat goyangan yang terasa">
+        <label>Goyangan terasa <b id="swayV">1,8×</b></label>
+        <input type="range" id="swayS" min="0" max="40" step="1" value="18" aria-label="Penguat goyangan yang terasa">
       </div>
     </div>
-    <div class="row">
-      <button class="btn pri" id="start">Mulai</button>
-      <button class="btn" id="pause" disabled>Jeda</button>
-      <button class="btn" id="toWave" disabled>Lompat ke air datang</button>
-      <button class="btn" id="sound" aria-pressed="true">Suara: nyala</button>
-      <input type="range" class="scrub" id="scrub" min="0" max="1000" value="0" disabled aria-label="Geser waktu">
-      <div class="selwrap">
-        <select id="site" aria-label="Pilih lokasi"></select>
-      </div>
-      <div class="selwrap">
+    <input type="range" class="scrub" id="scrub" min="0" max="1000" value="0" aria-label="Geser waktu">
+    <div class="acts">
+      <button class="btn pri" id="start">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        <span>Ulang</span></button>
+      <button class="btn" id="pause">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        <span>Jeda</span></button>
+      <button class="btn" id="toWave">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3"/><path d="M2 20c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3"/><path d="M12 3v6M9 6l3-3 3 3"/></svg>
+        <span>Lompat</span></button>
+      <button class="btn" id="view" aria-pressed="false">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6-9 6z"/><path d="M3 15l9 6 9-6"/></svg>
+        <span>Udara</span></button>
+    </div>
+    <div class="opts">
+      <button class="btn sm" id="sound" aria-pressed="true">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 8.5a5 5 0 0 1 0 7"/></svg>
+        <span>Suara</span></button>
+      <span class="selwrap sm">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+        <select id="site" aria-label="Pilih lokasi"></select></span>
+      <span class="selwrap sm">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
         <select id="speed" aria-label="Kecepatan waktu">
-          <option value="1">1× waktu nyata</option>
-          <option value="10">10×</option>
-          <option value="60" selected>60×</option>
-          <option value="300">300×</option>
-        </select>
-      </div>
-      <a class="btn" href="index.html">← Peta &amp; angka</a>
+          <option value="1">1×</option><option value="10">10×</option>
+          <option value="60" selected>60×</option><option value="300">300×</option>
+        </select></span>
+      <a class="btn sm" href="index.html">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>
+        <span>Peta</span></a>
     </div>
   </div>
 </div>
@@ -205,18 +243,18 @@ select{appearance:none;border:1px solid rgba(120,180,200,.3);background:rgba(10,
   <div class="ibox">
     <p class="eyebrow">Sudut pandang orang pertama · Mw 9,5 Selat Sunda</p>
     <h1>Berdiri di sana saat itu terjadi</h1>
-    <p>Ini bukan animasi karangan. Guncangan yang akan kamu rasakan dibangkitkan dari
-      <strong>percepatan tanah hasil perhitungan</strong> di titik itu, berlangsung selama
-      <strong>durasi sungguhan</strong> yang dihitung model. Air naik mengikuti
-      <strong>mareogram dari solver tsunami</strong> — tinggi dan waktunya apa adanya.</p>
+    <p>Guncangan yang akan kamu rasakan dibangkitkan dari <strong>percepatan tanah hasil
+      perhitungan</strong> di titik itu, selama <strong>durasi sungguhan</strong> model.
+      Bangunan runtuh menurut <strong>kurva kerentanan</strong> — pada MMI IX sekitar empat dari
+      sepuluh rumah non-rekayasa ambruk. Air naik mengikuti <strong>mareogram solver tsunami</strong>.</p>
     <div class="grid2" id="introFigs"></div>
-    <p class="note">Suara disintesis dari data yang sama: gemuruh mengikuti percepatan tanah,
-      sirene menyala setelah guncangan reda, deru tsunami menguat seiring gelombang mendekat.
-      Pakai earphone kalau ada — sebagian besar energinya di frekuensi rendah.</p>
-    <p class="note"><strong style="color:var(--warn)">Peringatan:</strong> guncangan layar dan
-      suara frekuensi rendah bisa memicu mual, pusing, atau kecemasan. Kalau kamu punya riwayat
-      epilepsi fotosensitif, vertigo, atau trauma bencana, sebaiknya lewati halaman ini.
-      Tombol jeda selalu tersedia, dan goyangan bisa dikecilkan sampai nol.</p>
+    <p class="note">Suara disintesis dari data yang sama. Pakai earphone kalau ada — sebagian besar
+      energinya di frekuensi rendah. Tombol <b>Dari udara</b> memperlihatkan gelombang menggulung
+      dari laut ke darat.</p>
+    <p class="note"><strong style="color:var(--warn)">Peringatan:</strong> guncangan layar, suara
+      frekuensi rendah, dan gambaran kehancuran. Bisa memicu mual, pusing, atau kecemasan. Kalau kamu
+      punya riwayat epilepsi fotosensitif, vertigo, atau trauma bencana, sebaiknya lewati halaman ini.
+      Goyangan bisa dikecilkan sampai nol.</p>
     <div class="row">
       <button class="btn pri" id="go">Saya paham, mulai</button>
       <a class="btn" href="index.html">Kembali ke peta</a>
@@ -292,8 +330,23 @@ function buildGM(s){
   const x=synthComponent(s.pga,s.pgv,s.durasi,s.seed||1337,1.0);
   const z=synthComponent(s.pga,s.pgv,s.durasi,(s.seed||1337)+91,1.0);
   const y=synthComponent(s.pga,s.pgv,s.durasi,(s.seed||1337)+457,0.55);
-  return {x,z,y,total:x.total,dt:x.dt,
+  // puncak resultan yang PERNAH dialami sampai waktu t.
+  // Bangunan runtuh bila puncak ini melampaui kapasitasnya - bukan
+  // percepatan sesaat - sehingga hasilnya tidak bergantung pada
+  // kerapatan bingkai maupun lompatan waktu.
+  const n=Math.min(x.n,z.n), run=new Float32Array(n);
+  let m=0;
+  for(let i=0;i<n;i++){ const r=Math.hypot(x.a[i],z.a[i]); if(r>m)m=r; run[i]=m; }
+  // resultan dua komponen bisa melebihi PGA; setarakan agar puncaknya = PGA
+  const norm=(s.pga*9.80665)/(m||1);
+  for(let i=0;i<n;i++) run[i]*=norm;
+  return {x,z,y,total:x.total,dt:x.dt,run,runN:n,
     peakDisp:Math.max(x.peakD,z.peakD)};
+}
+function peakGM(c,t){                 // puncak percepatan (g) sampai waktu t
+  if(t<=0) return 0;
+  const i=Math.min(c.runN-1,Math.floor(t/c.dt));
+  return c.run[i]/9.80665;
 }
 function sampleGM(c,t){                 // interpolasi linear
   const f=t/c.dt, i=f|0;
@@ -409,7 +462,7 @@ const AU={
     }
   }
 };
-window.__POVLIB={synthComponent,buildGM,sampleGM,AU,mulberry32,clamp,nf,romOf,hhmmss,$};
+window.__POVLIB={synthComponent,buildGM,sampleGM,peakGM,AU,mulberry32,clamp,nf,romOf,hhmmss,$};
 })();
 </script>
 
@@ -417,437 +470,493 @@ window.__POVLIB={synthComponent,buildGM,sampleGM,AU,mulberry32,clamp,nf,romOf,hh
 (function(){
 "use strict";
 const D=window.__POV, L=window.__POVLIB;
-const {buildGM,sampleGM,AU,mulberry32,clamp,nf,romOf,hhmmss,$}=L;
+const {buildGM,sampleGM,peakGM,AU,mulberry32,clamp,nf,romOf,hhmmss,$}=L;
 const T=window.THREE;
 if(!T){ $('#load').innerHTML='<div><span>Gagal memuat pustaka 3D. Periksa koneksi lalu muat ulang.</span></div>'; return; }
+const G=9.80665;
 
-/* ---------- watak tiap lokasi ---------- */
+/* ================================================================
+   KERENTANAN BANGUNAN
+   Guncangan: kurva rapuh lognormal. Tiap bangunan diberi kapasitas
+     kapasitas = median * exp(beta * z),  z ~ N(0,1)
+   sehingga bagian yang runtuh = P(kapasitas < PGA) = kurva rapuh itu
+   sendiri. Median menurut kelas (HAZUS URM/beton, disetel untuk
+   bangunan non-rekayasa Indonesia).
+   Tsunami: kedalaman aliran perobohan (Koshimura dkk. 2009, Banda Aceh)
+   ================================================================ */
+const KELAS=[
+  {nama:'rumah non-rekayasa', medA:0.38, betA:0.65, medD:2.2, betD:0.45},
+  {nama:'ruko 2-3 lantai',    medA:0.46, betA:0.62, medD:3.6, betD:0.42},
+  {nama:'beton bertulang',    medA:0.62, betA:0.58, medD:6.5, betD:0.40}
+];
+function gauss(rnd){ let u=0,v=0; while(u===0)u=rnd(); while(v===0)v=rnd();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(6.283185307*v); }
+function erf(x){const s=x<0?-1:1;x=Math.abs(x);const t=1/(1+0.3275911*x);
+  return s*(1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x));}
+const Phi=z=>0.5*(1+erf(z/Math.SQRT2));
+const pRuntuh=(pga,k)=>Phi(Math.log(pga/KELAS[k].medA)/KELAS[k].betA);
+
 const LOOK={
-  jakut:        {jenis:'kota',   rumah:260, tinggi:[3,7,14,34], palem:28, perahu:4,  pasir:0.18, hutan:0},
-  labuan:       {jenis:'pesisir',rumah:150, tinggi:[3,4,7,11],  palem:95, perahu:16, pasir:0.85, hutan:0.3},
-  anyer:        {jenis:'pesisir',rumah:110, tinggi:[3,4,8,13],  palem:110,perahu:10, pasir:0.9,  hutan:0.35},
-  merak:        {jenis:'kota',   rumah:190, tinggi:[3,6,11,22], palem:40, perahu:12, pasir:0.35, hutan:0.15},
-  pelabuhanratu:{jenis:'teluk',  rumah:120, tinggi:[3,5,9,16],  palem:80, perahu:20, pasir:0.7,  hutan:0.6},
-  bakauheni:    {jenis:'pesisir',rumah:90,  tinggi:[3,4,7,12],  palem:85, perahu:14, pasir:0.8,  hutan:0.45},
-  seribu:       {jenis:'pulau',  rumah:55,  tinggi:[3,4,6,8],   palem:130,perahu:18, pasir:1.0,  hutan:0.5},
-  cilegon:      {jenis:'kota',   rumah:210, tinggi:[4,8,15,28], palem:30, perahu:6,  pasir:0.3,  hutan:0.1}
+  jakut:        {rumah:250, tinggi:[3.2,7,14,32], palem:26, perahu:4,  pasir:0.18},
+  labuan:       {rumah:170, tinggi:[3.2,4.5,7,11],palem:95, perahu:16, pasir:0.85},
+  anyer:        {rumah:130, tinggi:[3.2,4.5,8,13],palem:110,perahu:10, pasir:0.9},
+  merak:        {rumah:190, tinggi:[3.4,6,11,22], palem:40, perahu:12, pasir:0.35},
+  pelabuhanratu:{rumah:140, tinggi:[3.2,5,9,16],  palem:80, perahu:20, pasir:0.7},
+  bakauheni:    {rumah:110, tinggi:[3.2,4.5,7,12],palem:85, perahu:14, pasir:0.8},
+  seribu:       {rumah:70,  tinggi:[3.2,4,6,8],   palem:130,perahu:18, pasir:1.0},
+  cilegon:      {rumah:210, tinggi:[4,8,15,28],   palem:30, perahu:6,  pasir:0.3}
 };
 
-/* ---------- penyiapan penyaji ---------- */
+/* ---------- penyaji ---------- */
 const cv=$('#stage');
-const renderer=new T.WebGLRenderer({canvas:cv,antialias:window.devicePixelRatio<2,powerPreference:'high-performance'});
+const renderer=new T.WebGLRenderer({canvas:cv,antialias:(window.devicePixelRatio||1)<2});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.6));
 renderer.setSize(innerWidth,innerHeight,false);
-renderer.toneMapping=T.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.0;
+renderer.toneMapping=T.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0;
 const scene=new T.Scene();
-const camera=new T.PerspectiveCamera(62,innerWidth/innerHeight,0.15,2600);
-const SKY_TOP=new T.Color(0x2f5f88), SKY_BOT=new T.Color(0xb4c8d2);
-scene.fog=new T.Fog(0x9fb8c4,320,2100);
-scene.background=new T.Color(0x9fb8c4);
-
-/* langit: bola terbalik dengan gradasi */
+const camera=new T.PerspectiveCamera(62,innerWidth/innerHeight,0.15,3200);
+const FOG_UDARA=0x9fb8c4, FOG_AIR=0x24606b;
+scene.fog=new T.Fog(FOG_UDARA,320,2400);
+scene.background=new T.Color(FOG_UDARA);
 {
-  const g=new T.SphereGeometry(2100,24,14);
-  const m=new T.ShaderMaterial({side:T.BackSide,depthWrite:false,uniforms:{
-      a:{value:SKY_TOP}, b:{value:SKY_BOT}, h:{value:0.0}},
-    vertexShader:'varying float vy; void main(){ vy=normalize(position).y; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
-    fragmentShader:'uniform vec3 a; uniform vec3 b; varying float vy;'+
-      'void main(){ float t=clamp(vy*1.25+0.35,0.0,1.0); gl_FragColor=vec4(mix(b,a,t),1.0); }'});
+  const g=new T.SphereGeometry(2600,24,14);
+  const m=new T.ShaderMaterial({side:T.BackSide,depthWrite:false,
+    uniforms:{a:{value:new T.Color(0x2f5f88)},b:{value:new T.Color(0xb4c8d2)}},
+    vertexShader:'varying float vy;void main(){vy=normalize(position).y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+    fragmentShader:'uniform vec3 a;uniform vec3 b;varying float vy;void main(){float t=clamp(vy*1.25+0.35,0.0,1.0);gl_FragColor=vec4(mix(b,a,t),1.0);}'});
   scene.add(new T.Mesh(g,m));
 }
 scene.add(new T.HemisphereLight(0xcfe2ec,0x4a5535,0.85));
-const sun=new T.DirectionalLight(0xfff2e0,1.15); sun.position.set(-160,180,90); scene.add(sun);
+const sun=new T.DirectionalLight(0xfff2e0,1.15); sun.position.set(-160,190,120); scene.add(sun);
 
-/* ---------- tanah: pantai melandai lalu datar ---------- */
-const SHORE=-40;                 // garis pantai pada sumbu Z
-const CAM_Z=150;                 // kamera berdiri ~190 m dari bibir pantai, menghadap laut
-let groundMesh=null, groundElev=2;
+/* ---------- tanah ---------- */
+const SHORE=-40, CAM_Z=110;
+let groundMesh=null;
 function groundYAt(z,elev){
-  if(z<SHORE-150) return -7.5;
-  if(z<SHORE) { const t=(z-(SHORE-150))/150; return -7.5+(7.5)*t*t; }
-  const t=clamp((z-SHORE)/70,0,1);
-  return elev*t*t*(3-2*t);       // smoothstep naik ke ketinggian tempat
+  if(z<SHORE-170) return -8.5;
+  if(z<SHORE){ const t=(z-(SHORE-170))/170; return -8.5+8.5*t*t; }
+  const t=clamp((z-SHORE)/60,0,1);
+  return elev*t*t*(3-2*t);
 }
 function buildGround(elev,look,rnd){
   if(groundMesh){ scene.remove(groundMesh); groundMesh.geometry.dispose(); groundMesh.material.dispose(); }
-  const S=1500, N=110;
-  const g=new T.PlaneGeometry(S,S,N,N); g.rotateX(-Math.PI/2);
-  const pos=g.attributes.position, col=[];
-  const cSand=new T.Color(0xd9c9a4), cSoil=new T.Color(0x7e8c5a),
-        cRoad=new T.Color(0x4a5157), cDeep=new T.Color(0x55603f);
+  const Sz=1800,N=120;
+  const g=new T.PlaneGeometry(Sz,Sz,N,N); g.rotateX(-Math.PI/2);
+  const pos=g.attributes.position,col=[];
+  const cSand=new T.Color(0xd9c9a4),cSoil=new T.Color(0x7e8c5a),
+        cRoad=new T.Color(0x4a5157),cDark=new T.Color(0x55603f);
   for(let i=0;i<pos.count;i++){
-    const x=pos.getX(i), z=pos.getZ(i);
+    const x=pos.getX(i),z=pos.getZ(i);
     let y=groundYAt(z,elev);
-    y+= (Math.sin(x*0.035)*Math.cos(z*0.028))*0.35*(z>SHORE?1:0.2);
+    y+=(Math.sin(x*0.035)*Math.cos(z*0.028))*0.35*(z>SHORE?1:0.2);
     pos.setY(i,y);
     const c=new T.Color();
     if(z<SHORE+10) c.copy(cSand);
-    else if(Math.abs(x)<9) c.copy(cRoad);                 // jalan utama menuju pantai
-    else if(Math.abs((Math.abs(x)-9)%90)<6) c.copy(cRoad); // jalan lingkungan
+    else if(Math.abs(x)<9) c.copy(cRoad);
+    else if(Math.abs((Math.abs(x)-9)%90)<6) c.copy(cRoad);
     else c.copy(cSoil).lerp(cSand,look.pasir*0.5);
-    c.lerp(cDeep,clamp((y-elev)*0.05,0,0.3));
+    c.lerp(cDark,clamp((y-elev)*0.05,0,0.3));
     const j=0.93+rnd()*0.14; col.push(c.r*j,c.g*j,c.b*j);
   }
   g.setAttribute('color',new T.Float32BufferAttribute(col,3));
   g.computeVertexNormals();
   groundMesh=new T.Mesh(g,new T.MeshLambertMaterial({vertexColors:true}));
-  scene.add(groundMesh); groundElev=elev;
+  scene.add(groundMesh);
 }
 
 /* ---------- air ---------- */
-const waterUni={uT:{value:0},uSea:{value:0},uLand:{value:0},uBoreZ:{value:-1200},
-                uAmp:{value:1},uTurb:{value:0}};
-let water=null;
+const wu={uT:{value:0},uSea:{value:0},uLand:{value:0},uBoreZ:{value:-2200},
+          uAmp:{value:1},uTurb:{value:0},uBoreH:{value:0}};
 {
-  const g=new T.PlaneGeometry(3000,3000,170,170); g.rotateX(-Math.PI/2);
-  const mat=new T.ShaderMaterial({transparent:true,uniforms:waterUni,
-    vertexShader:`
-      uniform float uT,uSea,uLand,uBoreZ,uAmp;
-      varying vec3 vP; varying float vFront; varying float vH;
-      void main(){
-        vec3 p=position;
-        float s=1.0/(1.0+exp((p.z-uBoreZ)*0.09));     // 1 di sisi laut
-        float base=mix(uLand,uSea,s);
-        float w=sin(p.x*0.075+uT*1.25)*0.16
-               +sin(p.z*0.058-uT*1.0)*0.20
-               +sin((p.x+p.z)*0.028+uT*0.62)*0.26
-               +sin((p.x-p.z)*0.013-uT*0.4)*0.34;
-        float d=abs(p.z-uBoreZ);
-        vFront=exp(-d*d/2600.0);
-        p.y=base+w*uAmp+vFront*1.2*max(uSea-uLand,0.0)*0.25;
-        vH=p.y; vP=p;
-        gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);
-      }`,
-    fragmentShader:`
-      uniform float uTurb; varying vec3 vP; varying float vFront; varying float vH;
-      void main(){
-        vec3 deep=vec3(0.07,0.22,0.30);
-        vec3 shal=vec3(0.20,0.46,0.48);
-        vec3 mud =vec3(0.26,0.21,0.13);
-        float f=clamp(vFront*1.4,0.0,1.0);
-        vec3 c=mix(deep,shal,clamp((vP.z+400.0)/900.0,0.0,1.0));
-        c=mix(c,mud,clamp(uTurb,0.0,1.0)*0.75);
-        c=mix(c,vec3(0.85,0.88,0.88),f*0.8);
-        float a=clamp(0.80+f*0.2,0.0,1.0);
-        gl_FragColor=vec4(c,a);
-      }`});
-  water=new T.Mesh(g,mat); water.renderOrder=2; scene.add(water);
+  const g=new T.PlaneGeometry(3600,3600,200,200); g.rotateX(-Math.PI/2);
+  const mat=new T.ShaderMaterial({transparent:true,uniforms:wu,
+    vertexShader:[
+      'uniform float uT,uSea,uLand,uBoreZ,uAmp,uBoreH;',
+      'varying vec3 vP; varying float vF;',
+      'void main(){',
+      '  vec3 p=position;',
+      '  float s=1.0/(1.0+exp((p.z-uBoreZ)*0.22));',
+      '  float base=mix(uLand,uSea,s);',
+      '  float w=sin(p.x*0.075+uT*1.25)*0.16+sin(p.z*0.058-uT*1.0)*0.20',
+      '         +sin((p.x+p.z)*0.028+uT*0.62)*0.26+sin((p.x-p.z)*0.013-uT*0.4)*0.34;',
+      '  float d=p.z-uBoreZ;',
+      '  float crest=exp(-d*d/420.0);',
+      '  vF=clamp(crest*1.5,0.0,1.0);',
+      '  p.y=base+w*uAmp+crest*uBoreH;',
+      '  vP=p;',
+      '  gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);',
+      '}'].join('\n'),
+    fragmentShader:[
+      'uniform float uTurb; varying vec3 vP; varying float vF;',
+      'void main(){',
+      '  vec3 deep=vec3(0.06,0.24,0.34), shal=vec3(0.16,0.48,0.54), mud=vec3(0.34,0.31,0.19);',
+      '  vec3 c=mix(deep,shal,clamp((vP.z+500.0)/1100.0,0.0,1.0));',
+      '  c=mix(c,mud,clamp(uTurb,0.0,1.0)*0.42);',
+      '  c+=vec3(0.05,0.08,0.10)*clamp(vP.y*0.08,0.0,1.0);',   // kilau langit di puncak riak
+      '  c=mix(c,vec3(0.93,0.95,0.95),clamp(vF*1.1,0.0,1.0));',
+      '  gl_FragColor=vec4(c,clamp(0.84+vF*0.16,0.0,1.0));',
+      '}'].join('\n')});
+  const water=new T.Mesh(g,mat); water.renderOrder=2; scene.add(water);
 }
 
-/* ---------- pembangun kota ---------- */
-let props=[];
+/* ---------- properti, bangunan, puing ---------- */
+let props=[], B=[], wallMesh=null, roofMesh=null, debMesh=null, DEB=[];
+const dummy=new T.Object3D();
 function clearProps(){ for(const p of props){ scene.remove(p); if(p.geometry)p.geometry.dispose(); } props=[]; }
 function addInstanced(geo,mat,items){
   if(!items.length) return null;
   const m=new T.InstancedMesh(geo,mat,items.length);
-  const o=new T.Object3D();
-  items.forEach((it,i)=>{ o.position.set(it.x,it.y,it.z);
-    o.rotation.set(it.rx||0,it.ry||0,it.rz||0);
-    o.scale.set(it.sx||1,it.sy||1,it.sz||1); o.updateMatrix(); m.setMatrixAt(i,o.matrix);
-    if(it.c) m.setColorAt(i,it.c); });
+  items.forEach((it,i)=>{ dummy.position.set(it.x,it.y,it.z);
+    dummy.rotation.set(it.rx||0,it.ry||0,it.rz||0);
+    dummy.scale.set(it.sx||1,it.sy||1,it.sz||1); dummy.updateMatrix();
+    m.setMatrixAt(i,dummy.matrix); if(it.c) m.setColorAt(i,it.c); });
   m.instanceMatrix.needsUpdate=true; if(m.instanceColor) m.instanceColor.needsUpdate=true;
   scene.add(m); props.push(m); return m;
 }
 function buildTown(key,elev){
-  clearProps();
+  clearProps(); B=[]; DEB=[]; wallMesh=roofMesh=debMesh=null;
   const look=LOOK[key]||LOOK.labuan;
-  const rnd=mulberry32(key.length*7919+Math.round(elev*13)+11);
+  const rnd=mulberry32(key.length*7919+11);
   buildGround(elev,look,rnd);
-
-  // --- bangunan ---
-  const walls=[],roofs=[];
   const tin=[0xa8483a,0x8c6a4a,0x6f7d7a,0x9aa0a3,0x7a5a46];
-  const wall=[0xd8d3c6,0xc9c2b2,0xe2ddd0,0xb9b3a4,0xcfd4d2];
+  const wl=[0xd8d3c6,0xc9c2b2,0xe2ddd0,0xb9b3a4,0xcfd4d2];
+  const walls=[],roofs=[];
   for(let i=0;i<look.rumah;i++){
     const far=rnd();
-    const z=SHORE+12+rnd()*470;
+    const z=SHORE+10+rnd()*500;
     const side=rnd()<0.5?-1:1;
-    const x=side*(12+Math.pow(rnd(),0.8)*270);
+    const x=side*(12+Math.pow(rnd(),0.8)*280);
     const tier=far<0.55?0:far<0.82?1:far<0.95?2:3;
-    const h=look.tinggi[tier]*(0.8+rnd()*0.5);
-    const w=4+rnd()*7, dp=4+rnd()*8;
-    const gy=groundYAt(z,elev);
-    walls.push({x,y:gy+h/2,z,sx:w,sy:h,sz:dp,ry:(rnd()-0.5)*0.35,
-      c:new T.Color(wall[(rnd()*wall.length)|0]).multiplyScalar(0.85+rnd()*0.3)});
-    if(h<12) roofs.push({x,y:gy+h+1.1,z,sx:w*0.82,sy:2.2,sz:dp*0.82,ry:Math.PI/4,
-      c:new T.Color(tin[(rnd()*tin.length)|0])});
+    const h=look.tinggi[tier]*(0.82+rnd()*0.45);
+    const w=4+rnd()*7, dp=4+rnd()*8, gy=groundYAt(z,elev);
+    const k=h<6?0:(h<12?1:2);
+    const b={x,z,w,h,dp,gy,k,ry:(rnd()-0.5)*0.35,
+      capA:KELAS[k].medA*Math.exp(KELAS[k].betA*gauss(rnd)),
+      capD:KELAS[k].medD*Math.exp(KELAS[k].betD*gauss(rnd)),
+      tilt:(rnd()-0.5)*0.9, twist:(rnd()-0.5)*0.7, st:0, t0:0, wi:walls.length, ri:-1};
+    B.push(b);
+    walls.push({x,y:gy+h/2,z,sx:w,sy:h,sz:dp,ry:b.ry,
+      c:new T.Color(wl[(rnd()*wl.length)|0]).multiplyScalar(0.85+rnd()*0.3)});
+    if(h<12){ b.ri=roofs.length;
+      roofs.push({x,y:gy+h+1.1,z,sx:w*0.82,sy:2.2,sz:dp*0.82,ry:Math.PI/4,
+        c:new T.Color(tin[(rnd()*tin.length)|0])}); }
   }
-  addInstanced(new T.BoxGeometry(1,1,1),
-    new T.MeshLambertMaterial({vertexColors:false}),walls);
-  addInstanced(new T.ConeGeometry(0.78,1,4),
-    new T.MeshLambertMaterial({}),roofs);
-
-  // --- masjid (penanda kampung Indonesia) ---
-  {
-    const z=SHORE+95, x=-46, gy=groundYAt(z,elev);
+  wallMesh=addInstanced(new T.BoxGeometry(1,1,1),new T.MeshLambertMaterial({}),walls);
+  roofMesh=addInstanced(new T.ConeGeometry(0.78,1,4),new T.MeshLambertMaterial({}),roofs);
+  const deb=[];
+  for(let i=0;i<150;i++){
+    deb.push({x:0,y:-999,z:0,c:new T.Color(wl[(rnd()*wl.length)|0]).multiplyScalar(0.6+rnd()*0.3)});
+    DEB.push({alive:false,x:0,y:-999,z:0,vz:0,vx:0,rx:0,ry:0,rz:0,s:1});
+  }
+  debMesh=addInstanced(new T.BoxGeometry(1,1,1),new T.MeshLambertMaterial({}),deb);
+  { const z=SHORE+95,x=-46,gy=groundYAt(z,elev);
     const body=new T.Mesh(new T.BoxGeometry(16,7,14),new T.MeshLambertMaterial({color:0xe8e4d8}));
     body.position.set(x,gy+3.5,z); scene.add(body); props.push(body);
-    const dome=new T.Mesh(new T.SphereGeometry(5,16,10,0,Math.PI*2,0,Math.PI*0.55),
+    const dome=new T.Mesh(new T.SphereGeometry(5,16,10,0,6.2832,0,Math.PI*0.55),
       new T.MeshLambertMaterial({color:0x2f6f63}));
     dome.position.set(x,gy+7,z); scene.add(dome); props.push(dome);
     const min=new T.Mesh(new T.CylinderGeometry(1.1,1.3,17,10),new T.MeshLambertMaterial({color:0xe8e4d8}));
     min.position.set(x+11,gy+8.5,z); scene.add(min); props.push(min);
     const cap=new T.Mesh(new T.ConeGeometry(1.7,3,10),new T.MeshLambertMaterial({color:0x2f6f63}));
-    cap.position.set(x+11,gy+18.5,z); scene.add(cap); props.push(cap);
-  }
-
-  // --- pohon kelapa ---
+    cap.position.set(x+11,gy+18.5,z); scene.add(cap); props.push(cap); }
   const tr=[],fr=[];
   for(let i=0;i<look.palem;i++){
-    const z=SHORE-14+rnd()*440;
-    const x=(rnd()-0.5)*620;
+    const z=SHORE-14+rnd()*450, x=(rnd()-0.5)*640;
     const gy=groundYAt(z,elev), h=7+rnd()*7;
-    tr.push({x,y:gy+h/2,z,sx:1,sy:h,sz:1,rz:(rnd()-0.5)*0.22});
-    for(let f=0;f<5;f++) fr.push({x,y:gy+h,z,ry:f*1.256+rnd(),rz:0.95+rnd()*0.3,
-      sx:1,sy:1,sz:1});
+    tr.push({x,y:gy+h/2,z,sy:h,rz:(rnd()-0.5)*0.22});
+    for(let f=0;f<5;f++) fr.push({x,y:gy+h,z,ry:f*1.256+rnd(),rz:0.95+rnd()*0.3});
   }
-  addInstanced(new T.CylinderGeometry(0.22,0.42,1,6),
-    new T.MeshLambertMaterial({color:0x6b5a41}),tr);
+  addInstanced(new T.CylinderGeometry(0.22,0.42,1,6),new T.MeshLambertMaterial({color:0x6b5a41}),tr);
   addInstanced(new T.ConeGeometry(0.85,4.6,4,1,true),
     new T.MeshLambertMaterial({color:0x3f6b34,side:T.DoubleSide}),fr);
-
-  // --- tiang listrik & kabel ---
-  const poles=[];
-  for(let i=0;i<20;i++){ const z=SHORE+20+i*24, x=(i%2?1:-1)*10.5, gy=groundYAt(z,elev);
-    poles.push({x,y:gy+4.5,z,sx:1,sy:9,sz:1}); }
-  addInstanced(new T.CylinderGeometry(0.16,0.2,1,5),
-    new T.MeshLambertMaterial({color:0x8b8478}),poles);
-
-  // --- perahu ---
-  const boats=[];
-  for(let i=0;i<look.perahu;i++){
-    const z=SHORE-25-rnd()*150, x=(rnd()-0.5)*420;
-    boats.push({x,y:-0.4,z,sx:1.4+rnd()*0.9,sy:1,sz:4+rnd()*4,ry:rnd()*3.14,
-      c:new T.Color().setHSL(rnd(),0.55,0.55)});
-  }
-  addInstanced(new T.BoxGeometry(1,1.2,1),new T.MeshLambertMaterial({}),boats);
-
-  // --- orang, untuk membandingkan tinggi ---
-  const ppl=[],heads=[];
+  const po=[];
+  for(let i=0;i<22;i++){ const z=SHORE+18+i*24,x=(i%2?1:-1)*10.5;
+    po.push({x,y:groundYAt(z,elev)+4.5,z,sy:9}); }
+  addInstanced(new T.CylinderGeometry(0.16,0.2,1,5),new T.MeshLambertMaterial({color:0x8b8478}),po);
+  const bo=[];
+  for(let i=0;i<look.perahu;i++){ const z=SHORE-25-rnd()*160,x=(rnd()-0.5)*440;
+    bo.push({x,y:-0.4,z,sx:1.4+rnd()*0.9,sy:1.2,sz:4+rnd()*4,ry:rnd()*3.14,
+      c:new T.Color().setHSL(rnd(),0.55,0.55)}); }
+  addInstanced(new T.BoxGeometry(1,1,1),new T.MeshLambertMaterial({}),bo);
+  const pp=[],hd=[];
   for(let i=0;i<26;i++){
-    const z=SHORE+20+rnd()*(CAM_Z-40-SHORE), x=(rnd()-0.5)*54;
-    if(Math.abs(z-CAM_Z)<12 && Math.abs(x)<4) continue;     // jangan menempel di kamera
-    const gy=groundYAt(z,elev), c=new T.Color().setHSL(rnd(),0.45,0.42);
-    ppl.push({x,y:gy+0.78,z,sx:1,sy:1,sz:1,ry:rnd()*6.28,c});
-    heads.push({x,y:gy+1.56,z,sx:1,sy:1,sz:1});
+    const z=SHORE+20+rnd()*(CAM_Z-38-SHORE), x=(rnd()-0.5)*54;
+    if(Math.abs(z-CAM_Z)<11&&Math.abs(x)<4) continue;
+    const gy=groundYAt(z,elev);
+    pp.push({x,y:gy+0.78,z,ry:rnd()*6.28,c:new T.Color().setHSL(rnd(),0.45,0.42)});
+    hd.push({x,y:gy+1.56,z});
   }
-  addInstanced(new T.CapsuleGeometry(0.2,1.06,4,8),new T.MeshLambertMaterial({}),ppl);
-  addInstanced(new T.SphereGeometry(0.12,8,6),new T.MeshLambertMaterial({color:0x8d6a4f}),heads);
+  addInstanced(new T.CapsuleGeometry(0.2,1.06,4,8),new T.MeshLambertMaterial({}),pp);
+  addInstanced(new T.SphereGeometry(0.12,8,6),new T.MeshLambertMaterial({color:0x8d6a4f}),hd);
+  const gy0=groundYAt(CAM_Z-7,elev);
+  const pole=new T.Mesh(new T.CylinderGeometry(0.13,0.13,16,8),new T.MeshLambertMaterial({color:0xf2f2f2}));
+  pole.position.set(2.6,gy0+8,CAM_Z-7); scene.add(pole); props.push(pole);
+  [[1.65,0xff5f4d],[2.5,0xffc800],[5,0xff9100],[10,0xff3020]].forEach(function(a){
+    const r=new T.Mesh(new T.BoxGeometry(1.05,0.17,0.17),new T.MeshBasicMaterial({color:a[1]}));
+    r.position.set(2.6,gy0+a[0],CAM_Z-7); scene.add(r); props.push(r); });
+}
 
-  // --- tiang ukur di depan kamera ---
-  const gy0=groundYAt(CAM_Z-6,elev);
-  const pole=new T.Mesh(new T.CylinderGeometry(0.13,0.13,14,8),
-    new T.MeshLambertMaterial({color:0xf2f2f2}));
-  pole.position.set(2.6,gy0+7,CAM_Z-7); scene.add(pole); props.push(pole);
-  [[1.65,0xff5f4d],[2.5,0xffc800],[5,0xff9100],[8,0xff3020]].forEach(([h,c])=>{
-    const r=new T.Mesh(new T.BoxGeometry(1.05,0.17,0.17),new T.MeshBasicMaterial({color:c}));
-    r.position.set(2.6,gy0+h,CAM_Z-7); scene.add(r); props.push(r);
-  });
-  return look;
+function spawnDebris(b,n){
+  let made=0;
+  for(let i=0;i<DEB.length&&made<n;i++){
+    const d=DEB[i]; if(d.alive) continue;
+    d.alive=true;
+    d.x=b.x+(Math.random()-0.5)*b.w; d.z=b.z+(Math.random()-0.5)*b.dp;
+    d.y=b.gy+0.4+Math.random()*b.h*0.5;
+    d.vx=(Math.random()-0.5)*1.2; d.vz=(Math.random()-0.5)*1.2;
+    d.rx=Math.random()*3; d.ry=Math.random()*3; d.rz=Math.random()*3;
+    d.s=0.6+Math.random()*1.5; made++;
+  }
+}
+function updateDebris(dt,sea,flowV,elev){
+  if(!debMesh) return;
+  for(let i=0;i<DEB.length;i++){
+    const d=DEB[i];
+    if(!d.alive){ dummy.position.set(0,-999,0); dummy.rotation.set(0,0,0);
+      dummy.scale.set(0.001,0.001,0.001); dummy.updateMatrix(); debMesh.setMatrixAt(i,dummy.matrix); continue; }
+    const gh=groundYAt(d.z,elev), dep=sea-gh;
+    if(dep>0.3){ d.vz+=(flowV-d.vz)*Math.min(1,dt*0.5); d.y+=((sea-0.2)-d.y)*Math.min(1,dt*1.5);
+      d.ry+=dt*0.8; d.rx+=dt*0.5; }
+    else { d.vz*=0.92; d.y+=((gh+0.3)-d.y)*Math.min(1,dt*2); }
+    d.z+=d.vz*dt; d.x+=d.vx*dt;
+    if(d.z>CAM_Z+420||Math.abs(d.x)>700) d.alive=false;
+    dummy.position.set(d.x,d.y,d.z); dummy.rotation.set(d.rx,d.ry,d.rz);
+    dummy.scale.set(d.s*1.3,d.s*0.45,d.s*1.1); dummy.updateMatrix();
+    debMesh.setMatrixAt(i,dummy.matrix);
+  }
+  debMesh.instanceMatrix.needsUpdate=true;
+}
+
+let ruinFrac=0;
+function updateBuildings(t,accPeak,sea,elev,flowV,dt){
+  if(!wallMesh) return;
+  let ruin=0;
+  for(let i=0;i<B.length;i++){
+    const b=B[i];
+    const gh=b.gy, dep=Math.max(0,sea-gh);
+    if(b.st===0){
+      if(accPeak>=b.capA){ b.st=1; b.t0=t; spawnDebris(b,3); }
+      else if(dep>b.capD){ b.st=3; b.t0=t; spawnDebris(b,4); }
+    } else if(b.st===1){ if(t-b.t0>1.6) b.st=2; }
+    else if(b.st===2){ if(dep>b.capD*0.55){ b.st=3; b.t0=t; spawnDebris(b,3); } }
+    else if(b.st===3){ if(t-b.t0>4.5) b.st=4; }
+    if(b.st>=1) ruin++;
+    let sy=1,ty=0,tx=0,tz=0,dz=0,sc=1,vis=1;
+    if(b.st===1){ const p=clamp((t-b.t0)/1.6,0,1);
+      sy=1-0.72*p; tx=b.tilt*p; tz=b.twist*p; ty=-b.h*0.36*p; }
+    else if(b.st===2){ sy=0.28; tx=b.tilt; tz=b.twist; ty=-b.h*0.36; }
+    else if(b.st===3){ const p=clamp((t-b.t0)/4.5,0,1);
+      sy=0.28*(1-p*0.8); tx=b.tilt+1.1*p; tz=b.twist+0.8*p;
+      ty=-b.h*0.36-p*1.2; dz=p*(14+flowV*1.6); sc=1-p*0.35; vis=1-p; }
+    else if(b.st===4){ vis=0; }
+    if(vis<=0){ dummy.position.set(b.x,-999,b.z); dummy.rotation.set(0,0,0);
+      dummy.scale.set(0.001,0.001,0.001); }
+    else { dummy.position.set(b.x,b.gy+b.h*sy/2+ty,b.z+dz);
+      dummy.rotation.set(tx,b.ry,tz);
+      dummy.scale.set(b.w*sc,b.h*sy,b.dp*sc); }
+    dummy.updateMatrix(); wallMesh.setMatrixAt(b.wi,dummy.matrix);
+    if(b.ri>=0&&roofMesh){
+      if(b.st===0){ dummy.position.set(b.x,b.gy+b.h+1.1,b.z); dummy.rotation.set(0,Math.PI/4,0);
+        dummy.scale.set(b.w*0.82,2.2,b.dp*0.82); }
+      else { dummy.position.set(b.x,-999,b.z); dummy.rotation.set(0,0,0);
+        dummy.scale.set(0.001,0.001,0.001); }
+      dummy.updateMatrix(); roofMesh.setMatrixAt(b.ri,dummy.matrix);
+    }
+  }
+  wallMesh.instanceMatrix.needsUpdate=true;
+  if(roofMesh) roofMesh.instanceMatrix.needsUpdate=true;
+  ruinFrac=B.length?ruin/B.length:0;
+  updateDebris(dt,sea,flowV,elev);
 }
 
 /* ---------- keadaan ---------- */
-let S=null, GM=null, tSim=0, playing=false, speed=60, sway=1.8, userElev=2;
-let lastFrame=performance.now(), toastT=0;
-const accHist=new Float32Array(150); let accI=0;
-const tCv=$('#accTrace'), tCtx=tCv.getContext('2d');
-
-function siteByKey(k){ return D.site.find(s=>s.key===k)||D.site[0]; }
-function seaAt(t){                       // mareogram ter-interpolasi (meter)
-  const f=t/D.dtSampel, i=Math.floor(f);
+let S=null,GM=null,tSim=0,playing=false,speed=60,sway=1.8,userElev=2,camMode='mata',speedNow=1;
+let lastFrame=performance.now(),toastT=0;
+const accHist=new Float32Array(140); let accI=0;
+const tCv=$('#accTrace'),tCtx=tCv.getContext('2d');
+const siteByKey=k=>D.site.find(s=>s.key===k)||D.site[0];
+function seaAt(t){
+  const f=t/D.dtSampel,i=Math.floor(f);
   if(i<0) return 0;
   if(i>=S.ts.length-1) return S.ts[S.ts.length-1]/100;
-  const w=f-i;
-  return (S.ts[i]*(1-w)+S.ts[i+1]*w)/100;
+  const w=f-i; return (S.ts[i]*(1-w)+S.ts[i+1]*w)/100;
 }
 function loadSite(key){
-  S=siteByKey(key);
-  S.seed=1337+key.length*31;
-  GM=buildGM(S);
+  S=siteByKey(key); S.seed=1337+key.length*31; GM=buildGM(S);
   userElev=clamp(Math.max(S.elev,0),0,30);
   $('#elevS').value=userElev; $('#elevV').textContent=nf(userElev)+' m';
   buildTown(key,userElev);
   $('#locName').textContent=S.nama;
   $('#locDesc').textContent=S.tempat;
   $('#roMmi').innerHTML=romOf(S.mmi)+' <small>('+nf(S.mmi,1)+')</small>';
-  tSim=0; waterUni.uBoreZ.value=-1400;
-  fillIntroFigs();
-  render();
-}
-function fillIntroFigs(){
-  const tS=S.rrup/3.6;
+  tSim=0; ruinFrac=0;
   $('#introFigs').innerHTML=
    '<div><span class="v">'+romOf(S.mmi)+'</span><span class="k">Intensitas MMI</span></div>'+
    '<div><span class="v">'+nf(S.durasi)+' <small style="font-size:.6em">dtk</small></span><span class="k">Lama guncangan</span></div>'+
-   '<div><span class="v">'+nf(S.puncak,1)+' <small style="font-size:.6em">m</small></span><span class="k">Gelombang tertinggi</span></div>'+
-   '<div><span class="v">'+nf(S.tTiba/60)+' <small style="font-size:.6em">mnt</small></span><span class="k">Air datang</span></div>';
+   '<div><span class="v">'+nf(pRuntuh(S.pga,0)*100)+' <small style="font-size:.6em">%</small></span><span class="k">Rumah runtuh</span></div>'+
+   '<div><span class="v">'+nf(S.puncak,1)+' <small style="font-size:.6em">m</small></span><span class="k">Gelombang</span></div>';
+  render(0.016);
 }
-function toast(a,b){
-  const el=$('#toast'); el.querySelector('b').textContent=a;
-  el.querySelector('span').textContent=b||'';
-  el.style.opacity='1'; toastT=performance.now()+3600;
-}
-
-/* ---------- gelang waktu ---------- */
+function toast(a,b){ const el=$('#toast'); el.querySelector('b').textContent=a;
+  el.querySelector('span').textContent=b||''; el.style.opacity='1'; toastT=performance.now()+3800; }
 const TOTAL=8*3600;
-function phaseOf(t){
+function phaseOf(t,dep){
   const tS=S.rrup/3.6;
-  if(t<tS) return ['menunggu','Gelombang seismik dalam perjalanan'];
-  if(t<tS+S.durasi) return ['guncangan','MMI '+romOf(S.mmi)+' berlangsung'];
-  if(S.tTiba>0 && t<S.tTiba-180) return ['sesudah guncangan','Sirene peringatan dini'];
-  if(S.tTiba>0 && t<S.tTiba) return ['air surut','Laut menarik diri'];
-  if(t<S.tPuncak+600) return ['air datang','Gelombang tsunami'];
-  return ['tergenang','Air belum surut'];
+  if(t<tS) return 'menunggu';
+  if(t<tS+S.durasi) return 'guncangan';
+  if(dep>0.05) return 'tergenang';
+  if(S.tTiba>0&&t<S.tTiba-180) return 'sesudah guncangan';
+  if(S.tTiba>0&&t<S.tTiba) return 'air surut';
+  if(t<S.tPuncak+600) return 'air datang';
+  return 'sesudahnya';
 }
 
-/* ---------- gambar bingkai ---------- */
-function render(){
-  const tS=S.rrup/3.6;
-  const tShake=tSim-tS;
-  const inShake = tShake>=0 && tShake<GM.total;
+function render(dtReal){
+  const dt=dtReal||0.016;
+  const tS=S.rrup/3.6, tShake=tSim-tS;
+  const inShake=tShake>=0&&tShake<GM.total;
   const sx=inShake?sampleGM(GM.x,tShake):{a:0,d:0};
   const sz=inShake?sampleGM(GM.z,tShake):{a:0,d:0};
   const sy=inShake?sampleGM(GM.y,tShake):{a:0,d:0};
-  const accG=Math.hypot(sx.a,sz.a)/9.80665;
-  const dispCm=Math.hypot(sx.d,sz.d)*100;
-
-  // kamera POV setinggi mata
-  const gy=groundYAt(CAM_Z,userElev);
-  camera.position.set(sx.d*sway, gy+1.65+sy.d*sway*0.7, CAM_Z+sz.d*sway);
-  camera.rotation.order='YXZ';
-  camera.rotation.set(
-    -0.055 + clamp(-sz.a/9.80665,-0.3,0.3)*0.5*sway*0.6,
-    clamp(sx.a/9.80665,-0.3,0.3)*0.10*sway,
-    clamp(-sx.a/9.80665,-0.3,0.3)*0.40*sway*0.6);
-
-  // air
+  const accG=Math.hypot(sx.a,sz.a)/G;
+  const accPeak=inShake?peakGM(GM,tShake):(tShake>=GM.total?peakGM(GM,GM.total):0);
   const sea=seaAt(tSim);
-  const bore=(S.tTiba>0)?clamp((tSim-(S.tTiba-70))/140,0,1):0;
-  waterUni.uT.value=tSim*0.35;
-  waterUni.uSea.value=sea;
-  waterUni.uLand.value=Math.min(sea,seaAt(Math.max(0,tSim-150)));
-  waterUni.uBoreZ.value=-1300+bore*2100;
-  waterUni.uAmp.value=clamp(0.6+Math.abs(sea)*0.25,0.4,3.2);
-  waterUni.uTurb.value=clamp((sea-0.4)*0.5,0,1);
 
-  const groundHere=userElev;
-  const depth=Math.max(0,sea-groundHere);
+  const hNear=6+Math.max(0,sea);
+  const cBore=Math.sqrt(G*hNear);
+  const boreZ=(S.tTiba>0)?clamp(SHORE+(tSim-S.tTiba)*cBore,-2400,2400):-2400;
+  const boreH=(S.tTiba>0&&Math.abs(tSim-S.tTiba)<900)?clamp(Math.max(0,sea)*0.55+1.2,0,7):0;
+  wu.uT.value=tSim*0.35; wu.uSea.value=sea;
+  wu.uLand.value=Math.min(sea,seaAt(Math.max(0,tSim-90)));
+  wu.uBoreZ.value=boreZ; wu.uBoreH.value=boreH;
+  wu.uAmp.value=clamp(0.8+Math.abs(sea)*0.30,0.6,4.0);
+  wu.uTurb.value=clamp((sea-0.3)*0.30,0,1);
 
-  // suara
-  const near=(S.tTiba>0)?clamp(1-(Math.abs(tSim-S.tTiba)/420),0,1):0;
-  const roar=clamp(Math.max(near*clamp(S.puncak/6,0.25,1.6), depth>0.05?0.35+depth*0.06:0),0,1.3);
-  const siren=(tSim>tS+S.durasi && S.tTiba>0 && tSim<S.tTiba+900)?1:0;
-  AU.update({accG,depth,roar,siren,tSim,playing},0);
+  const ghCam=groundYAt(CAM_Z,userElev);
+  const depth=Math.max(0,sea-userElev);
+  const flowV=Math.min(12,2.0*Math.sqrt(G*Math.max(depth,0)));
+  updateBuildings(tSim,accPeak,sea,userElev,flowV,Math.min(dt*speedNow,0.4));
 
-  // HUD
-  $('#clock').textContent='T + '+hhmmss(tSim);
-  const ph=phaseOf(tSim);
-  $('#phase').textContent=ph[0];
-  $('#roAcc').innerHTML=nf(accG,3)+' <small>g</small>';
-  $('#roDisp').innerHTML=nf(dispCm,0)+' <small>cm</small>';
-  $('#roSea').innerHTML=(sea>=0?'+':'')+nf(sea,2)+' <small>m</small>';
-  $('#roDepth').innerHTML= depth>0.02
-    ? '<span style="color:'+(depth>1.5?'var(--crit)':'var(--warn)')+'">'+nf(depth,2)+' <small>m</small></span>'
-    : '<span style="color:var(--ok)">kering</span>';
-  const dtArr=S.tTiba-tSim;
-  $('#roEta').innerHTML = S.tTiba<0 ? '–'
-    : dtArr>0 ? nf(dtArr/60)+' <small>mnt lagi</small>'
-    : '<span style="color:var(--crit)">sudah datang</span>';
-  const under=depth-1.55;                       // air di atas tinggi mata?
-  if(under>0){
-    scene.fog.color.setHex(0x24606b); scene.background.setHex(0x24606b);
-    scene.fog.near=2; scene.fog.far=clamp(48-under*2.6,14,48);
+  if(camMode==='udara'){
+    const hh=Math.max(120,userElev+130);
+    camera.rotation.order='XYZ';
+    camera.position.set(sx.d*sway*0.4, hh+sy.d*sway, CAM_Z+255+sz.d*sway*0.4);
+    camera.lookAt(0, 0, SHORE-140);
   } else {
-    scene.fog.color.setHex(0x9fb8c4); scene.background.setHex(0x9fb8c4);
-    scene.fog.near=320; scene.fog.far=2100;
+    camera.rotation.order='YXZ';
+    camera.position.set(sx.d*sway, ghCam+1.65+sy.d*sway*0.7, CAM_Z+sz.d*sway);
+    camera.rotation.set(
+      -0.055+clamp(-sz.a/G,-0.3,0.3)*0.5*sway*0.6,
+      clamp(sx.a/G,-0.3,0.3)*0.10*sway,
+      clamp(-sx.a/G,-0.3,0.3)*0.40*sway*0.6);
   }
-  $('#veil').style.opacity = clamp(Math.max(accG*1.6, under>0?0.4:0),0,0.75)+'';
-  if(under>0 && !seenUnder){ seenUnder=true;
-    toast('Kamu tenggelam', nf(under,1)+' m air di atas kepala · naikkan ketinggian tempatmu'); }
-  if(under<=0) seenUnder=false;
 
-  // jejak akselerogram
-  accHist[accI=(accI+1)%accHist.length]=accG;
+  const under=(camMode==='mata')?depth-1.55:-1;
+  if(under>0){ scene.fog.color.setHex(FOG_AIR); scene.background.setHex(FOG_AIR);
+    scene.fog.near=2; scene.fog.far=clamp(48-under*2.6,14,48); }
+  else { scene.fog.color.setHex(FOG_UDARA); scene.background.setHex(FOG_UDARA);
+    scene.fog.near=320; scene.fog.far=2400; }
+
+  const dBore=Math.abs(boreZ-CAM_Z);
+  const near=(S.tTiba>0)?clamp(1-dBore/600,0,1):0;
+  const roar=clamp(Math.max(near*clamp(boreH/3,0.2,1.2),depth>0.05?clamp(0.3+depth*0.08,0,1):0),0,1.2);
+  const siren=(tSim>tS+S.durasi&&S.tTiba>0&&tSim<S.tTiba+900)?1:0;
+  AU.update({accG:accG,depth:depth,roar:roar,siren:siren,tSim:tSim,playing:playing},dt);
+
+  $('#clock').textContent='T + '+hhmmss(tSim);
+  $('#phase').textContent=phaseOf(tSim,depth);
+  $('#roAcc').innerHTML=nf(accG,3)+' <small>g</small>';
+  $('#roRuin').innerHTML=nf(ruinFrac*100)+' <small>%</small>';
+  $('#roSea').innerHTML=(sea>=0?'+':'')+nf(sea,2)+' <small>m</small>';
+  if(depth>0.02) $('#roDepth').innerHTML='<span style="color:'+(depth>1.5?'var(--crit)':'var(--warn)')+'">'+nf(depth,2)+' <small>m</small></span>';
+  else if(sea<userElev-0.5) $('#roDepth').innerHTML='<span style="color:var(--ok)">'+nf(userElev-sea,1)+' <small>m di bawahmu</small></span>';
+  else $('#roDepth').innerHTML='<span style="color:var(--ok)">kering</span>';
+  const dtArr=S.tTiba-tSim;
+  $('#roEta').innerHTML=S.tTiba<0?'–':(dtArr>0?nf(dtArr/60)+' <small>mnt lagi</small>'
+    :'<span style="color:var(--crit)">sudah datang</span>');
+  $('#veil').style.opacity=clamp(Math.max(accG*1.6,under>0?0.4:0),0,0.75)+'';
+
+  accHist[accI]=sx.a/G; accI=(accI+1)%accHist.length;
   tCtx.clearRect(0,0,tCv.width,tCv.height);
   tCtx.strokeStyle='rgba(120,180,200,.25)'; tCtx.lineWidth=1;
   tCtx.beginPath(); tCtx.moveTo(0,tCv.height/2); tCtx.lineTo(tCv.width,tCv.height/2); tCtx.stroke();
   tCtx.strokeStyle=accG>0.15?'#ff5f4d':(accG>0.05?'#f0a232':'#2ec4d6'); tCtx.lineWidth=2;
   tCtx.beginPath();
   for(let i=0;i<accHist.length;i++){
-    const v=accHist[(accI+1+i)%accHist.length];
+    const v=accHist[(accI+i)%accHist.length];
     const x=i/(accHist.length-1)*tCv.width;
-    const y=tCv.height/2-clamp(v/0.45,0,1)*(tCv.height/2-3)*(i%2?1:-1);
+    const y=tCv.height/2-clamp(v/0.45,-1,1)*(tCv.height/2-2);
     i?tCtx.lineTo(x,y):tCtx.moveTo(x,y);
   }
   tCtx.stroke();
-
   $('#scrub').value=Math.round(tSim/TOTAL*1000);
   renderer.render(scene,camera);
 }
 
-/* ---------- gelung utama ---------- */
-let seenShake=false,seenQuiet=false,seenDraw=false,seenWave=false,seenUnder=false;
+let seenShake=false,seenQuiet=false,seenDraw=false,seenWave=false,seenUnder=false,seenRuin=false;
 function loop(){
   requestAnimationFrame(loop);
-  const now=performance.now(), dtR=Math.min(0.1,(now-lastFrame)/1000); lastFrame=now;
+  const now=performance.now(),dtR=Math.min(0.1,(now-lastFrame)/1000); lastFrame=now;
   if(playing){
     const tS=S.rrup/3.6;
     let sp=speed;
-    if(tSim>tS-12 && tSim<tS+S.durasi+14) sp=1;                       // guncangan: waktu nyata
-    else if(S.tTiba>0 && tSim>S.tTiba-200 && tSim<S.tPuncak+420) sp=Math.min(sp,4);
-    tSim+=dtR*sp;
-    if(tSim>TOTAL){ tSim=TOTAL; playing=false; $('#pause').textContent='Ulangi'; }
-    // penanda kejadian
-    if(!seenShake && tSim>=tS){ seenShake=true;
-      toast('Guncangan dimulai','MMI '+romOf(S.mmi)+' · '+nf(S.durasi)+' detik'); }
-    if(!seenQuiet && tSim>=tS+S.durasi){ seenQuiet=true;
-      toast('Guncangan berhenti', S.tTiba>0?('Air datang '+nf((S.tTiba-tSim)/60)+' menit lagi'):'Tidak ada tsunami berarti'); }
-    if(!seenDraw && S.tTiba>0 && seaAt(tSim)<-0.5){ seenDraw=true;
-      toast('Laut surut','Tanda tsunami — segera ke tempat tinggi'); }
-    if(!seenWave && S.tTiba>0 && tSim>=S.tTiba){ seenWave=true;
-      toast('Air datang', nf(S.puncak,1)+' m · puncak menit ke-'+nf(S.tPuncak/60)); }
-  }
-  if(toastT && now>toastT){ $('#toast').style.opacity='0'; toastT=0; }
-  render();
+    if(tSim>tS-12&&tSim<tS+S.durasi+16) sp=1;
+    else if(S.tTiba>0&&tSim>S.tTiba-150&&tSim<S.tPuncak+480) sp=Math.min(sp,3);
+    speedNow=sp; tSim+=dtR*sp;
+    if(tSim>TOTAL){ tSim=TOTAL; playing=false; }
+    if(!seenShake&&tSim>=tS){ seenShake=true; toast('Guncangan dimulai','MMI '+romOf(S.mmi)+' · '+nf(S.durasi)+' detik'); }
+    if(!seenRuin&&ruinFrac>0.08){ seenRuin=true;
+      toast('Bangunan mulai runtuh',nf(pRuntuh(S.pga,0)*100)+'% rumah non-rekayasa tak sanggup menahan'); }
+    if(!seenQuiet&&tSim>=tS+S.durasi){ seenQuiet=true;
+      toast('Guncangan berhenti',nf(ruinFrac*100)+'% bangunan roboh'+(S.tTiba>0?' · air datang '+nf(Math.max(0,(S.tTiba-tSim))/60)+' menit lagi':'')); }
+    if(!seenDraw&&S.tTiba>0&&seaAt(tSim)<-0.5){ seenDraw=true; toast('Laut surut','Tanda tsunami — segera ke tempat tinggi'); }
+    if(!seenWave&&S.tTiba>0&&tSim>=S.tTiba){ seenWave=true; toast('Air datang',nf(S.puncak,1)+' m · puncak menit ke-'+nf(S.tPuncak/60)); }
+    const dep=Math.max(0,seaAt(tSim)-userElev);
+    if(!seenUnder&&camMode==='mata'&&dep>1.55){ seenUnder=true;
+      toast('Kamu tenggelam',nf(dep-1.55,1)+' m air di atas kepala · naikkan ketinggian tempatmu'); }
+    if(dep<=1.55) seenUnder=false;
+  } else speedNow=1;
+  if(toastT&&now>toastT){ $('#toast').style.opacity='0'; toastT=0; }
+  render(dtR);
 }
 
-/* ---------- kendali ---------- */
-function setPlay(v){
-  playing=v;
-  $('#pause').disabled=!v&&tSim<=0;
-  $('#pause').textContent=v?'Jeda':(tSim>=TOTAL?'Ulangi':'Lanjut');
-  $('#start').textContent=tSim>0?'Ulang dari awal':'Mulai';
-  if(v) AU.resume();
-}
-function reset(){ tSim=0; seenShake=seenQuiet=seenDraw=seenWave=seenUnder=false;
-  $('#toast').style.opacity='0'; }
-$('#go').addEventListener('click',()=>{ $('#intro').remove(); AU.resume(); setPlay(true); });
-$('#start').addEventListener('click',()=>{ reset(); setPlay(true); });
-$('#pause').addEventListener('click',()=>{ if(tSim>=TOTAL) reset(); setPlay(!playing); });
-$('#toWave').addEventListener('click',()=>{
-  if(S.tTiba<=0) return;
-  tSim=Math.max(0,S.tTiba-120); seenShake=seenQuiet=seenDraw=true; seenWave=false;
-  setPlay(true); });
-$('#sound').addEventListener('click',e=>{ const on=AU.toggle();
-  e.target.textContent='Suara: '+(on?'nyala':'mati'); e.target.setAttribute('aria-pressed',on); });
-$('#scrub').addEventListener('input',e=>{ tSim=(+e.target.value)/1000*TOTAL;
-  seenShake=seenQuiet=seenDraw=seenWave=true; render(); });
-$('#speed').addEventListener('change',e=>{ speed=+e.target.value; });
-$('#elevS').addEventListener('input',e=>{ userElev=+e.target.value;
-  $('#elevV').textContent=nf(userElev)+' m'; buildTown(S.key,userElev); render(); });
-$('#swayS').addEventListener('input',e=>{ sway=(+e.target.value)/10;
+function setPlay(v){ playing=v;
+  $('#pause').querySelector('span').textContent=v?'Jeda':(tSim>=TOTAL?'Ulang':'Lanjut');
+  if(v) AU.resume(); }
+function reset(){ tSim=0; ruinFrac=0;
+  seenShake=seenQuiet=seenDraw=seenWave=seenUnder=seenRuin=false;
+  $('#toast').style.opacity='0'; buildTown(S.key,userElev); }
+$('#go').addEventListener('click',function(){ $('#intro').remove(); AU.resume(); setPlay(true); });
+$('#start').addEventListener('click',function(){ reset(); setPlay(true); });
+$('#pause').addEventListener('click',function(){ if(tSim>=TOTAL) reset(); setPlay(!playing); });
+$('#toWave').addEventListener('click',function(){ if(S.tTiba<=0) return;
+  tSim=Math.max(0,S.tTiba-100); seenShake=seenQuiet=seenDraw=true; seenWave=false; setPlay(true); });
+$('#view').addEventListener('click',function(e){
+  camMode=(camMode==='mata')?'udara':'mata';
+  const b=e.currentTarget;
+  b.setAttribute('aria-pressed',camMode==='udara');
+  b.querySelector('span').textContent=(camMode==='udara')?'Mata':'Udara';
+  render(0.016); });
+$('#sound').addEventListener('click',function(e){ const on=AU.toggle();
+  e.currentTarget.setAttribute('aria-pressed',on);
+  e.currentTarget.querySelector('span').textContent=on?'Suara':'Bisu'; });
+$('#scrub').addEventListener('input',function(e){
+  const nt=(+e.target.value)/1000*TOTAL;
+  if(nt<tSim){ buildTown(S.key,userElev); ruinFrac=0; }
+  tSim=nt; seenShake=seenQuiet=seenDraw=seenWave=true; render(0.016); });
+$('#speed').addEventListener('change',function(e){ speed=+e.target.value; });
+$('#elevS').addEventListener('input',function(e){ userElev=+e.target.value;
+  $('#elevV').textContent=nf(userElev)+' m'; buildTown(S.key,userElev); render(0.016); });
+$('#swayS').addEventListener('input',function(e){ sway=(+e.target.value)/10;
   $('#swayV').textContent=nf(sway,1)+'×'; });
-$('#site').addEventListener('change',e=>{ reset(); loadSite(e.target.value); setPlay(playing); });
-addEventListener('resize',()=>{ renderer.setSize(innerWidth,innerHeight,false);
-  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); render(); },{passive:true});
+$('#site').addEventListener('change',function(e){
+  seenShake=seenQuiet=seenDraw=seenWave=seenUnder=seenRuin=false;
+  loadSite(e.target.value); setPlay(playing); });
+addEventListener('resize',function(){ renderer.setSize(innerWidth,innerHeight,false);
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); render(0.016); },{passive:true});
 
-/* ---------- mulai ---------- */
-$('#site').innerHTML=D.site.map(s=>'<option value="'+s.key+'">'+s.nama+'</option>').join('');
-$('#toWave').disabled=false;
-$('#swayV').textContent='1,8×';
-loadSite('labuan');
-$('#site').value='labuan';
+$('#site').innerHTML=D.site.map(function(s){return '<option value="'+s.key+'">'+s.nama+'</option>';}).join('');
+loadSite('labuan'); $('#site').value='labuan';
 $('#load').remove();
 loop();
 })();

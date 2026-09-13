@@ -18,8 +18,13 @@ function raw(m){const i=++id;return new Promise((res,rej)=>{w8.set(i,{res,rej});
   await sleep(9000);
   await S('Runtime.evaluate',{expression:"document.getElementById('go').click()"});
   await sleep(1500);
-  const shots=[['guncangan',45],['surut',4300],['puncak',4760],['tergenang',5400]];
-  for(const [name,t] of shots){
+  const shots=[['guncangan',52,0],['runtuh',95,0],['surut',4300,0],
+               ['udara_datang',4420,1],['udara_puncak',4760,1],['mata_puncak',4760,0]];
+  for(const [name,t,udara] of shots){
+    await S('Runtime.evaluate',{expression:
+      "(function(){var b=document.getElementById('view');"+
+      "var on=b.getAttribute('aria-pressed')==='true';"+
+      "if(on!=="+(udara?'true':'false')+") b.click();})()"});
     await S('Runtime.evaluate',{expression:
       "(function(){var s=document.getElementById('scrub');s.value="+Math.round(t/28800*1000)+";"+
       "s.dispatchEvent(new Event('input',{bubbles:true}));})()"});
@@ -27,7 +32,7 @@ function raw(m){const i=++id;return new Promise((res,rej)=>{w8.set(i,{res,rej});
     const sh=await S('Page.captureScreenshot',{format:'png'});
     fs.writeFileSync('pov_'+name+'.png',Buffer.from(sh.data,'base64'));
     const r=await S('Runtime.evaluate',{expression:
-      "document.getElementById('clock').textContent+' | '+document.getElementById('phase').textContent+' | air '+document.getElementById('roSea').textContent+' | kaki '+document.getElementById('roDepth').textContent",
+      "document.getElementById('clock').textContent+' | '+document.getElementById('phase').textContent+' | air '+document.getElementById('roSea').textContent+' | kaki '+document.getElementById('roDepth').textContent+' | runtuh '+document.getElementById('roRuin').textContent",
       returnByValue:true});
     console.log('  '+name.padEnd(10)+r.result.value);
   }
