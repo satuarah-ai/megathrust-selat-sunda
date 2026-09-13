@@ -24,7 +24,7 @@ h1{margin:0;font-weight:700;letter-spacing:-.03em;text-wrap:balance}
 
 /* ---- kerangka HUD: seluruh ruang tengah tetap milik pemandangan ---- */
 .hud{position:fixed;inset:0;pointer-events:none;display:grid;
-  grid-template-rows:auto auto 1fr auto;padding:8px;gap:6px;
+  grid-template-rows:auto auto 1fr auto auto;padding:8px;gap:6px;
   padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
 .hud > *{pointer-events:auto}
 .spacer{pointer-events:none}
@@ -59,7 +59,7 @@ h1{margin:0;font-weight:700;letter-spacing:-.03em;text-wrap:balance}
 .dock{display:grid;gap:6px}
 .scrub{width:100%;accent-color:var(--accent);height:16px;margin:0;
   background:transparent;cursor:pointer}
-.acts{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.acts{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .btn{appearance:none;border:1px solid var(--edge);background:var(--glass);color:var(--ink);
   font:600 12.5px/1.1 Archivo,sans-serif;padding:0 6px;border-radius:10px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;
@@ -124,6 +124,27 @@ h1{margin:0;font-weight:700;letter-spacing:-.03em;text-wrap:balance}
   .strip .rd:nth-child(n+5){display:none}
   #accTrace{display:none}
 }
+
+
+/* ---- lapisan teatrikal ---- */
+#alert{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .5s;z-index:12;
+  box-shadow:inset 0 0 0 4px rgba(255,64,44,.9),inset 0 0 70px rgba(255,64,44,.38)}
+.banner{position:fixed;left:50%;top:15%;transform:translateX(-50%);z-index:16;pointer-events:none;
+  padding:12px 20px 13px;border-radius:12px;border:2px solid var(--warn);background:rgba(6,16,24,.88);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);min-width:min(88vw,440px);max-width:92vw;
+  box-shadow:0 10px 40px rgba(0,0,0,.45);animation:bn .5s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes bn{from{transform:translateX(-50%) scale(.85);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+.banner b{display:block;font-size:clamp(21px,5.8vw,36px);font-weight:800;letter-spacing:-.015em;line-height:1.02;color:#fff}
+.banner span{display:block;font-family:IBM Plex Mono,monospace;font-size:12px;letter-spacing:.08em;margin-top:6px;color:var(--warn)}
+.banner.gempa{border-color:var(--warn)} .banner.gempa span{color:#ffd166}
+.banner.siaga{border-color:var(--crit)} .banner.siaga span{color:var(--crit)}
+.banner.bahaya{border-color:#ff3b2a;background:rgba(112,14,8,.92)} .banner.bahaya b{color:#ff6b5a;font-size:clamp(26px,7.5vw,46px)}
+.banner.bahaya span{color:#ffd9d4;font-weight:600}
+.caption{justify-self:center;max-width:min(92vw,560px);background:rgba(6,16,24,.86);border:1px solid var(--edge);
+  border-radius:9px;padding:8px 14px;font-size:13px;color:#dfeaf0;text-align:center;line-height:1.35;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-weight:500}
+@media(max-width:560px){ .caption{font-size:12px;padding:7px 11px} .banner{top:13%} }
+@media(prefers-reduced-motion:reduce){ .banner{animation:none} }
 
 /* ---- panel pembuka ---- */
 #intro{position:fixed;inset:0;z-index:20;background:rgba(4,11,17,.95);

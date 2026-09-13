@@ -34,7 +34,7 @@ console.log('\n=== B. LOGIKA VISUAL & FISIKA DALAM KODE ===');
 const cek=[
  ['bangunan runtuh saat guncangan', /runtuh|collapse|fragility|hancur/i.test(d),
   'Tidak ada model kerusakan bangunan sama sekali. Pada MMI VIII-IX, 15-45% rumah non-rekayasa runtuh (HAZUS/Koshimura). Bangunan berdiri kokoh = tidak realistis.'],
- ['bangunan tersapu tsunami', /st=3/.test(d)&&/capD/.test(d)&&/dz=p\*\(14\+flowV/.test(d),
+ ['bangunan tersapu tsunami', /b\.st=3; b\.t0=t; fragSpawn/.test(d)&&/capD/.test(d),
   'Tidak ada model bangunan hanyut. Kedalaman aliran >2 m merobohkan rumah kayu, >4-6 m merobohkan pasangan bata (Koshimura dkk. 2009, Banda Aceh).'],
  ['tampilan dari udara (bird eye)', /udara|birdEye|camMode/i.test(d),
   'Tidak ada mode pandangan dari atas. Pengguna tidak bisa melihat gelombang menggulung dari laut ke darat.'],
