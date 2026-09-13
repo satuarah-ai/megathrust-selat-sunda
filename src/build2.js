@@ -1,3 +1,4 @@
+const GC=require('fs').readFileSync('gc_snippet.html','utf8');
 const fs=require('fs'), zlib=require('zlib'), path=require('path');
 const meta=require('./data/meta.json');
 const jf=JSON.parse(fs.readFileSync('./data/jkt_flood.json','utf8'));

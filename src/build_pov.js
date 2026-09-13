@@ -1,3 +1,4 @@
+const GC=require('fs').readFileSync('gc_snippet.html','utf8');
 const fs=require('fs'), path=require('path');
 const pov=JSON.parse(fs.readFileSync('data/pov.json','utf8'));
 const A=fs.readFileSync('povA.html','utf8');
