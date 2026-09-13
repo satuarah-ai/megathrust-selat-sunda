@@ -1,0 +1,300 @@
+<header class="top">
+  <div class="wrap hdr">
+    <div class="tagrow">
+      <span class="eyebrow">Simulasi skenario &middot; bukan ramalan</span>
+    </div>
+    <h1>Megathrust Selat&nbsp;Sunda</h1>
+    <p class="lede">Apa yang terjadi bila zona subduksi di barat daya Selat Sunda pecah sepanjang
+      1.454&nbsp;km sekaligus &mdash; gempa <b>Mw&nbsp;9,5</b>, setara peristiwa terkuat yang pernah
+      tercatat manusia. Halaman ini menjalankan fisikanya sungguhan: patahan, deformasi dasar laut,
+      perambatan tsunami di batimetri asli, dan guncangan tanah di 105&nbsp;juta jiwa.</p>
+    <div class="tagrow">
+      <span class="pill hot">Mw 9,5</span>
+      <span class="pill">105,06&deg;BT &nbsp;8,50&deg;LS</span>
+      <span class="pill">kedalaman 26 km</span>
+      <span class="pill">rupture 1.454 &times; 200 km</span>
+      <span class="pill ok">solver tervalidasi &times;3</span>
+    </div>
+    <div class="notice">
+      <p><b>Ini skenario, bukan prakiraan.</b> Tidak ada gempa Mw&nbsp;9,5 yang sedang berlangsung.
+      BMKG dan Pusgen menaksir magnitudo maksimum segmen Selat Sunda di angka <b>8,7</b>; Mw&nbsp;9,5
+      mengandaikan pecahnya beberapa segmen sekaligus &mdash; Enggano, Selat Sunda, dan Jawa Barat &ndash; Tengah &mdash;
+      dalam satu peristiwa. Yang nyata di halaman ini adalah <b>datanya</b>: batimetri, topografi,
+      sebaran penduduk, dan 1.200 gempa yang benar-benar terjadi di zona ini sejak 1970.</p>
+    </div>
+  </div>
+  <div class="wrap"><div class="figs" id="figs"></div></div>
+</header>
+
+<main>
+<section class="band" id="konsol">
+  <div class="wrap">
+    <div class="h2row">
+      <div>
+        <p class="eyebrow">Konsol simulasi</p>
+        <h2>Delapan jam pertama</h2>
+      </div>
+      <p class="tstat" id="simInfo">grid 684&times;512 &middot; sel 1,96 km &middot; 350.208 sel aktif</p>
+    </div>
+    <p class="prose" style="margin-bottom:18px">Peta di bawah dihitung, bukan digambar. Dasarnya batimetri
+      GMRT resolusi 1&nbsp;km; palung Sunda diekstrak langsung dari data kedalaman itu, bukan dijiplak.
+      Tekan <em>Jalankan animasi</em> untuk menyelesaikan persamaan air dangkal 2&nbsp;D langkah demi langkah
+      di depan matamu.</p>
+    <div class="console">
+      <div class="mapbox">
+        <canvas id="map" width="684" height="512"></canvas>
+        <div class="loading" id="loading">
+          <div class="lwrap"><div class="lbar"><i id="lbar"></i></div>
+          <span id="lmsg">memuat data peta…</span></div>
+        </div>
+        <div class="maptop">
+          <span class="chip" id="clock">T + <b>00:00:00</b></span>
+          <span class="chip" id="cursor">sentuh peta untuk membaca titik</span>
+        </div>
+        <div class="legend">
+          <div class="lt" id="legTitle">Tinggi gelombang maksimum</div>
+          <div class="ramp" id="legRamp"></div>
+          <div class="lticks" id="legTicks"></div>
+        </div>
+      </div>
+      <aside class="rail">
+        <div class="railhd">
+          <div class="seg" id="layers" role="group" aria-label="Lapisan peta">
+            <button data-layer="etamax" aria-pressed="true">Tinggi maks</button>
+            <button data-layer="arrival" aria-pressed="false">Waktu tiba</button>
+            <button data-layer="mmi" aria-pressed="false">Guncangan</button>
+            <button data-layer="deform" aria-pressed="false">Deformasi</button>
+            <button data-layer="seis" aria-pressed="false">Gempa nyata</button>
+          </div>
+        </div>
+        <div class="railbody" id="gauges"></div>
+      </aside>
+      <div class="transport">
+        <button class="btn pri" id="run">Jalankan animasi</button>
+        <button class="btn" id="pause" disabled>Jeda</button>
+        <input type="range" class="scrub" id="scrub" min="0" max="1" value="0" step="1"
+               aria-label="Geser waktu simulasi" disabled>
+        <label class="sel"><span class="sr">Mutu simulasi</span>
+          <select id="qual">
+            <option value="full">Mutu penuh &middot; sel 1,96 km</option>
+            <option value="fast">Mode cepat &middot; sel 3,9 km</option>
+          </select></label>
+        <span class="tstat" id="progress">siap &mdash; peta hasil sudah dimuat</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="jabodetabek">
+  <div class="wrap">
+    <p class="eyebrow">Pertanyaan intinya</p>
+    <h2 style="margin-bottom:14px">Sejauh mana Jabodetabek kena?</h2>
+    <div class="cols" style="margin-bottom:26px">
+      <div class="panel flat">
+        <p class="prose">Jawaban singkatnya: <strong>Jabodetabek tidak dihancurkan tsunami &mdash; ia
+          dihancurkan guncangan.</strong> Selat Sunda menyempit dan Laut Jawa dangkal, jadi gelombang
+          yang sampai Teluk Jakarta tinggal sepersepuluh sampai seperduapuluh tinggi pesisir Banten.
+          Itu bukan tebakan: modelku menghasilkan nisbah 10,6&nbsp;% dan tsunami Krakatau 1883 yang
+          sungguh terjadi mencatat 5,3&nbsp;% (2,1&nbsp;m di Tanjung Priok lawan 40&nbsp;m di Merak).</p>
+        <p class="prose">Yang justru diremehkan orang adalah jaraknya. Jakarta sering disebut
+          &ldquo;350&nbsp;km dari sumber&rdquo;. Salah. Bidang megathrust menghunjam sampai kedalaman 51&nbsp;km
+          <em>di bawah</em> Jawa Barat, sehingga jarak Jakarta ke bidang patahan (Rrup) hanya
+          <strong>137&nbsp;km</strong>. Guncangannya jauh lebih dekat daripada yang dibayangkan.</p>
+      </div>
+      <div class="panel">
+        <h3>Tiga ancaman, bobotnya berbeda</h3>
+        <div class="vgrid">
+          <div class="vrow"><div class="vt"><span class="vn">Guncangan MMI VIII selama 78 detik</span>
+            <span class="vd">29,98 juta jiwa terpapar</span></div><span class="verdict part">utama</span></div>
+          <div class="vrow"><div class="vt"><span class="vn">Likuefaksi tanah aluvial</span>
+            <span class="vd">5,80 juta jiwa di zona peluang tinggi</span></div><span class="verdict part">berat</span></div>
+          <div class="vrow"><div class="vt"><span class="vn">Tsunami Teluk Jakarta 2,0 m</span>
+            <span class="vd">54.460 jiwa di zona genangan, tiba menit ke-201</span></div><span class="verdict pass">terbatas</span></div>
+        </div>
+        <p style="font-size:13px;color:var(--ink3);margin-top:2px">Ditambah satu hal yang tak pulih:
+          tanah Jakarta <b style="color:var(--ink)">ambles 0,51 m permanen</b> dalam enam menit.</p>
+      </div>
+    </div>
+    <div class="tblwrap">
+      <table id="jbdTable"><caption class="eyebrow" style="padding:11px 11px 0;text-align:left;caption-side:top">
+        Dampak per kota/kabupaten &middot; penduduk dari GHSL 2025 (JRC), guncangan dari GMPE BC Hydro</caption></table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink3);margin-top:10px;max-width:76ch">
+      <b style="color:var(--ink2)">Cara membaca angka ini.</b> Tiap baris menampilkan nilai
+      <b>terberat di dalam wilayah itu</b> — bukan rata-rata, dan bukan nilai di pusat kotanya.
+      Satu kabupaten bisa punya pantai terbuka menghadap sumber sekaligus pesisir terlindung; yang
+      ditampilkan adalah yang terparah. Karena itu angka di sini berbeda dengan angka di
+      <a href="pov.html">simulasi 3D</a>, yang mengambil satu titik tertentu. Keduanya benar untuk
+      pertanyaan yang berbeda: tabel ini untuk menakar kebutuhan wilayah, halaman 3D untuk merasakan
+      satu tempat. &ldquo;Air maks pesisir&rdquo; diukur di sel laut dangkal 0&ndash;60 m.</p>
+  </div>
+</section>
+
+<section class="band" id="pov">
+  <div class="wrap">
+    <div class="cols" style="align-items:center">
+      <div class="panel flat">
+        <p class="eyebrow">Sudut pandang orang pertama</p>
+        <h2 style="margin-bottom:12px">Berdiri di sana saat itu terjadi</h2>
+        <p class="prose">Angka di halaman ini sulit dirasakan. <strong>MMI VIII selama 78 detik</strong> —
+          sepanjang apa itu sebenarnya? <strong>Gelombang 7,9 meter</strong> — setinggi apa dibanding
+          rumahmu? Halaman berikut menjawabnya dengan cara lain: kamu berdiri di titik itu, dalam 3D.</p>
+        <p class="prose">Guncangannya dibangkitkan dari <em>percepatan tanah hasil perhitungan</em> di
+          lokasi tersebut, bukan getaran karangan. Air naik mengikuti <em>mareogram dari solver</em> yang
+          sama dengan peta di atas. Suaranya disintesis dari data yang sama — gemuruh mengikuti
+          percepatan tanah, sirene menyala setelah guncangan reda.</p>
+        <p style="margin-top:4px"><a class="btn pri" href="pov.html" style="text-decoration:none">
+          Masuk ke simulasi 3D &rarr;</a></p>
+        <p style="font-size:12.5px;color:var(--ink3);margin-top:6px">Ada guncangan layar dan suara
+          frekuensi rendah. Lewati bila kamu rentan vertigo, epilepsi fotosensitif, atau trauma bencana.</p>
+      </div>
+      <div class="panel">
+        <h3>Delapan lokasi bisa dipilih</h3>
+        <div class="tblwrap" style="border:0">
+          <table style="min-width:0"><tbody>
+            <tr><td>Pelabuhan Ratu</td><td>34,9 m</td><td>menit 24</td></tr>
+            <tr><td>Labuan</td><td>7,9 m</td><td>menit 73</td></tr>
+            <tr><td>Bakauheni</td><td>7,1 m</td><td>menit 67</td></tr>
+            <tr><td>Anyer</td><td>7,0 m</td><td>menit 69</td></tr>
+            <tr><td>Merak</td><td>6,1 m</td><td>menit 80</td></tr>
+            <tr><td>Kota Cilegon</td><td>3,0 m</td><td>menit 117</td></tr>
+            <tr><td>Jakarta Utara</td><td>2,0 m</td><td>menit 211</td></tr>
+            <tr><td>Kepulauan Seribu</td><td>1,5 m</td><td>menit 145</td></tr>
+          </tbody></table>
+        </div>
+        <p style="font-size:12.5px;color:var(--ink3)">Tinggi gelombang dan waktu tiba di tiap titik,
+          langsung dari keluaran solver.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="genangan">
+  <div class="wrap">
+    <div class="h2row">
+      <div><p class="eyebrow">Resolusi 61 meter</p><h2>Genangan pesisir Jakarta</h2></div>
+    </div>
+    <div class="cols">
+      <div class="floodbox">
+        <canvas id="flood" width="455" height="273"></canvas>
+        <div class="slider">
+          <input type="range" id="lvl" min="0" max="50" step="1" value="20" aria-label="Tinggi muka air di Teluk Jakarta">
+          <div class="slrow"><span>0 m</span><span id="lvlv" style="color:var(--accent);font-weight:600">2,0 m &mdash; skenario model</span><span>5 m</span></div>
+        </div>
+        <div class="kpi" id="floodKpi"></div>
+      </div>
+      <div class="panel flat">
+        <p class="prose">Genangan dihitung di atas topografi asli 61&nbsp;meter per piksel, hanya untuk
+          daratan yang benar-benar <em>tersambung</em> ke laut &mdash; bukan sekadar &ldquo;semua yang lebih rendah
+          dari sekian meter&rdquo;. Amblesan koseismik 0,51&nbsp;m dimasukkan sebelum air dihitung.</p>
+        <p class="prose"><strong>Amblesan itu sendiri memperbesar genangan 45&nbsp;%.</strong> Pada air
+          2,0&nbsp;m &mdash; tinggi maksimum di perairan pesisir Jakarta Utara menurut model &mdash;
+          52,1&nbsp;km&sup2; tergenang dengan amblesan, hanya 35,9&nbsp;km&sup2; tanpanya. Penduduk
+          terdampak naik dari 12.062 menjadi 19.734 jiwa &mdash; bertambah 64&nbsp;% hanya karena tanah
+          turun setengah meter.</p>
+        <p class="prose">Geser penggaris itu melewati 3&nbsp;meter dan perhatikan apa yang terjadi.
+          Dataran Jakarta punya <strong>tebing non-linier</strong>: dari 3&nbsp;m ke 5&nbsp;m, luas genangan
+          melompat 95&nbsp;&rarr;&nbsp;562&nbsp;km&sup2; dan penduduk terdampak 52.215&nbsp;&rarr;&nbsp;805.717 jiwa.
+          Lima belas kali lipat, hanya dari dua meter air tambahan.</p>
+        <svg id="curveChart" class="chart" viewBox="0 0 480 250" role="img"
+             aria-label="Kurva luas genangan dan penduduk terdampak terhadap tinggi muka air"></svg>
+        <div class="ckey">
+          <span><i style="background:var(--accent)"></i>Luas tergenang (km&sup2;)</span>
+          <span><i style="background:var(--mmi9)"></i>Penduduk di zona genangan</span>
+        </div>
+        <p style="font-size:12.5px;color:var(--ink3)">Catatan: topografi GMRT belum memuat tanggul laut
+          NCICD yang sedang dibangun. Di ruas yang tanggulnya sudah berdiri dan bertahan, genangan nyata
+          akan lebih kecil dari angka ini.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="garis-waktu">
+  <div class="wrap">
+    <p class="eyebrow">Urutan kejadian</p>
+    <h2 style="margin-bottom:6px">Dari detik nol</h2>
+    <p class="prose" style="margin-bottom:20px">Waktu tiba tsunami di bawah ini keluaran solver, bukan
+      taksiran. Titik merah menandai kejadian penentu; titik biru menandai Jabodetabek.</p>
+    <div class="tl" id="timeline"></div>
+  </div>
+</section>
+
+<section class="band" id="wilayah">
+  <div class="wrap">
+    <div class="h2row"><div><p class="eyebrow">Lingkup penuh</p><h2>Wilayah terdampak terberat</h2></div></div>
+    <p class="prose" style="margin-bottom:18px">Jabodetabek bukan yang terparah. Pesisir selatan Jawa dan
+      Banten barat menghadap langsung ke sumber, tanpa penghalang, dengan waktu tiba 9&ndash;20 menit.</p>
+    <div class="tblwrap">
+      <table id="regTable"></table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink3);margin-top:10px;max-width:76ch">
+      <b style="color:var(--ink2)">Dua kolom air, dua arti.</b> &ldquo;Pesisir&rdquo; adalah tinggi muka
+      air di perairan dangkal 0&ndash;60 m &mdash; itu yang dipakai sebagai angka utama halaman ini
+      (tertinggi 38,6 m). &ldquo;Di darat&rdquo; adalah tinggi air pada sel daratan yang tergenang, yang
+      bisa lebih tinggi karena air menumpuk saat menabrak daratan (tertinggi 54,3 m). Sel model
+      berukuran 1,96 km, jadi nilai tertinggi di satu sel bisa mengandung pemusatan numerik;
+      pakailah sebagai urutan besaran, bukan angka pasti per titik.</p>
+  </div>
+</section>
+
+<section class="band" id="korban">
+  <div class="wrap">
+    <p class="eyebrow">Perkiraan korban</p>
+    <h2 style="margin-bottom:14px">Satu tuas yang menentukan segalanya</h2>
+    <div class="cols">
+      <div class="panel flat">
+        <p class="prose">Korban guncangan dihitung dengan model empiris USGS PAGER memakai koefisien
+          Indonesia (Jaiswal &amp; Wald 2010), dikalibrasi dari gempa-gempa Indonesia yang sudah terjadi.
+          Korban tsunami memakai laju kematian menurut kedalaman aliran, dikalibrasi dari Aceh 2004 dan
+          Tohoku 2011.</p>
+        <p class="prose"><strong>Selisih antara dua angka di sebelah adalah peringatan dini.</strong>
+          1,46 juta jiwa berada di zona genangan. Yang menentukan mereka hidup atau tidak bukan tinggi
+          gelombangnya &mdash; melainkan apakah mereka bergerak dalam 20 menit pertama. Di pesisir Banten
+          dan selatan Jawa, air datang menit ke-9 sampai ke-20: tidak ada waktu menunggu pengumuman.
+          Guncangan itu sendiri adalah peringatannya.</p>
+        <p style="font-size:12.5px;color:var(--ink3)">Ketidakpastian model korban bencana semacam ini
+          lazimnya sampai faktor sepuluh. Angka ini untuk menimbang kebijakan, bukan untuk dikutip
+          sebagai ramalan.</p>
+      </div>
+      <div class="panel">
+        <h3>Dua masa depan</h3>
+        <div class="kpi" id="casKpi"></div>
+        <svg id="casChart" class="chart" viewBox="0 0 460 180" role="img"
+             aria-label="Perbandingan korban dengan dan tanpa evakuasi"></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="metode">
+  <div class="wrap">
+    <div class="h2row"><div><p class="eyebrow">Transparansi</p><h2>Cara ini dihitung &mdash; dan diuji</h2></div></div>
+    <div class="cols">
+      <div class="panel flat">
+        <p class="prose">Model apa pun tidak berarti sampai ia dijatuhkan dulu oleh kenyataan. Solver
+          ini kuuji melawan tiga hal yang sudah terjadi, sebelum dipakai untuk hal yang belum terjadi.
+          Satu uji sempat gagal total &mdash; simulasi meledak jadi gelombang 1.099&nbsp;meter di tepi domain.
+          Syarat batasnya kuganti dengan lapisan peredam, lalu lolos.</p>
+        <div class="vgrid" id="valid"></div>
+      </div>
+      <div class="panel flat">
+        <h3 style="margin-bottom:4px">Rantai perhitungan</h3>
+        <div class="vgrid" id="chain"></div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap" style="display:grid;gap:16px">
+    <div>
+      <p class="eyebrow" style="margin-bottom:7px">Sumber data</p>
+      <div class="srcs" id="srcs"></div>
+    </div>
+    <p style="max-width:70ch">Dibuat sebagai alat bantu pertimbangan mitigasi. Angka pada halaman ini
+      adalah keluaran model dengan ketidakpastian besar; untuk peringatan dini dan keputusan resmi,
+      rujukannya tetap BMKG dan BNPB.</p>
+  </div>
+</footer>

@@ -1,0 +1,269 @@
+/* ================= ANGKA KUNCI ================= */
+const T=D.totals;
+const FIGS=[
+  ['9,50','','magnitudo momen (Mw)'],
+  ['2.686 <small>Mt TNT</small>','','energi terpancar'],
+  ['1.454 <small>km</small>','','panjang rupture'],
+  ['6 <small>mnt</small> 08 <small>dtk</small>','','lama pecah'],
+  ['1.245 <small>km³</small>','','air terangkat'],
+  ['38,6 <small>m</small>','','air tertinggi di pesisir'],
+  ['36,85 <small>jt</small>','','jiwa di Jabodetabek'],
+  ['137 <small>km</small>','','Jakarta ke bidang patahan'],
+];
+$('#figs').innerHTML=FIGS.map(f=>'<div class="fig"><span class="v">'+f[0]+'</span><span class="k">'+f[2]+'</span></div>').join('');
+
+/* ================= TABEL JABODETABEK ================= */
+const JBD_ORDER=['Kota JakartaUtara','Kota JakartaPusat','Kota JakartaBarat','Kota JakartaTimur',
+ 'Kota JakartaSelatan','Kabupaten KepulauanSeribu','Kota KotaTangerang','Kota TangerangSelatan',
+ 'Kabupaten Tangerang','Kota KotaBekasi','Kabupaten Bekasi','Kota Depok','Kota KotaBogor','Kabupaten Bogor'];
+const NICE={'Kota JakartaUtara':'Jakarta Utara','Kota JakartaPusat':'Jakarta Pusat',
+ 'Kota JakartaBarat':'Jakarta Barat','Kota JakartaTimur':'Jakarta Timur','Kota JakartaSelatan':'Jakarta Selatan',
+ 'Kabupaten KepulauanSeribu':'Kep. Seribu','Kota KotaTangerang':'Kota Tangerang',
+ 'Kota TangerangSelatan':'Tangerang Selatan','Kabupaten Tangerang':'Kab. Tangerang',
+ 'Kota KotaBekasi':'Kota Bekasi','Kabupaten Bekasi':'Kab. Bekasi','Kota Depok':'Kota Depok',
+ 'Kota KotaBogor':'Kota Bogor','Kabupaten Bogor':'Kab. Bogor'};
+const byName={}; D.impact.forEach(r=>byName[r.n]=r);
+function mmiCell(m){return '<span class="mmibadge" style="background:'+mmiHex(m)+'">'+romOf(m)+'</span>';}
+function jbdTable(){
+  const rows=JBD_ORDER.map(n=>byName[n]).filter(Boolean);
+  let P=0,M8=0,L=0,TP=0;
+  let h='<thead><tr><th>Wilayah</th><th>Penduduk</th><th>MMI</th><th>Rrup</th><th>Guncangan</th>'+
+        '<th>Warga di MMI VIII+</th><th>Likuefaksi</th><th>Amblesan</th><th>Tsunami</th><th>Tiba</th></tr></thead><tbody>';
+  for(const r of rows){ P+=r.pop; M8+=r.m8; L+=r.liq; TP+=r.tp;
+    h+='<tr><td>'+(NICE[r.n]||r.n)+'</td>'+
+       '<td>'+juta(r.pop)+' jt</td>'+
+       '<td>'+mmiCell(r.mmi)+'</td>'+
+       '<td>'+r.rr+' km</td>'+
+       '<td>'+Math.round(PHYS.durationSec(MW,r.rr))+' dtk</td>'+
+       '<td>'+nf(100*r.m8/r.pop)+'%</td>'+
+       '<td>'+nf(100*r.liq/r.pop)+'%</td>'+
+       '<td style="color:var(--crit)">'+nf(r.uz,2)+' m</td>'+
+       '<td>'+(r.th>0.3?nf(r.th,1)+' m':'–')+'</td>'+
+       '<td>'+(r.ta>0?nf(r.ta/60)+' mnt':'–')+'</td></tr>';}
+  h+='</tbody><tfoot><tr><td>Jabodetabek</td><td>'+juta(P)+' jt</td><td colspan="3"></td>'+
+     '<td>'+nf(100*M8/P)+'%</td><td>'+nf(100*L/P)+'%</td><td colspan="2"></td>'+
+     '<td>'+nf(TP)+' jiwa</td></tr></tfoot>';
+  $('#jbdTable').innerHTML=h;
+}
+jbdTable();
+
+/* ================= TABEL WILAYAH ================= */
+function regTable(){
+  const rows=D.impact.filter(r=>r.pop>60000).slice(0,20);
+  let h='<thead><tr><th>Wilayah</th><th>Provinsi</th><th>Penduduk</th><th>MMI</th>'+
+        '<th>Air maks pesisir</th><th>Air maks di darat</th><th>Tiba</th><th>Amblesan</th><th>Zona genangan</th><th>Perkiraan korban</th></tr></thead><tbody>';
+  for(const r of rows){
+    const dead=r.sd+r.td;
+    h+='<tr><td><span class="sev" style="background:'+mmiHex(r.mmi)+'"></span>'+r.n.replace('Kabupaten','Kab.').replace('Kota Kota','Kota ')+'</td>'+
+       '<td style="text-align:left;color:var(--ink3)">'+r.p.replace(/([a-z])([A-Z])/g,'$1 $2')+'</td>'+
+       '<td>'+juta(r.pop)+' jt</td><td>'+mmiCell(r.mmi)+'</td>'+
+       '<td><b>'+(r.th>0.3?nf(r.th,1)+' m':'–')+'</b></td>'+
+       '<td>'+(r.tl>0.3?nf(r.tl,1)+' m':'–')+'</td>'+
+       '<td>'+(r.ta>0?nf(r.ta/60)+' mnt':'–')+'</td>'+
+       '<td>'+nf(r.uz,1)+' m</td>'+
+       '<td>'+(r.tp>500?nf(r.tp):'–')+'</td>'+
+       '<td>'+(dead>200?nf(dead):'<200')+'</td></tr>';}
+  h+='</tbody>';
+  $('#regTable').innerHTML=h;
+}
+regTable();
+
+/* ================= GARIS WAKTU ================= */
+function timeline(){
+  const fixed=[
+    [0,'Patahan mulai pecah di 105,06°BT 8,50°LS, kedalaman 26 km. Rekahan merambat dua arah, 2,5 km/detik.','key'],
+    [45,'Gelombang seismik mencapai pesisir selatan Jawa. Guncangan mulai terasa di Banten.',''],
+    [110,'Jabodetabek mulai berguncang. <b>MMI VIII</b> — berdiri pun sulit.','jkt'],
+    [368,'Rupture berhenti. <b>1.454 km</b> robekan, <b>2.686 megaton TNT</b> terlepas. Dasar laut terangkat 12,3 m; pesisir Banten ambles hingga 5,7 m permanen.','key'],
+  ];
+  const rows=fixed.map(f=>({t:f[0],d:f[1],c:f[2]}));
+  const seen={};
+  D.impact.filter(r=>r.ta>0&&r.tp>3000).sort((a,b)=>a.ta-b.ta).forEach(r=>{
+    const nm=r.n.replace('Kabupaten','Kab.').replace('Kota Kota','Kota ');
+    if(seen[Math.round(r.ta/300)]) return; seen[Math.round(r.ta/300)]=1;
+    const jkt=/Jakarta|Tangerang|Bekasi|Seribu/.test(r.n);
+    rows.push({t:r.ta,c:jkt?'jkt':'',
+      d:'Tsunami mencapai <b>'+nm+'</b> — air '+nf(r.th,1)+' m di perairan pesisir, '+nf(r.tp)+' jiwa di zona genangan.'});
+  });
+  rows.sort((a,b)=>a.t-b.t);
+  $('#timeline').innerHTML=rows.map(r=>{
+    const lbl = r.t<60 ? 'T + '+r.t+' dtk'
+      : r.t<3600 ? 'T + '+Math.floor(r.t/60)+' mnt '+(r.t%60?String(Math.round(r.t%60)).padStart(2,'0')+' dtk':'')
+      : 'T + '+Math.floor(r.t/3600)+' j '+String(Math.round(r.t%3600/60)).padStart(2,'0')+' mnt';
+    return '<div class="tlrow '+r.c+'"><span class="tlt">'+lbl+'</span><span class="tld">'+r.d+'</span></div>';
+  }).join('');
+}
+timeline();
+
+/* ================= GENANGAN JAKARTA ================= */
+const JK=D.jkt, JW=JK.w, JH=JK.h;
+const fcv=$('#flood'), fctx=fcv.getContext('2d');
+fcv.width=JW; fcv.height=JH;
+const flabel=new Uint8Array(JW*JH), queue=new Int32Array(JW*JH);
+const JSEA=ramp([[0,hx('#10394f')],[12,hx('#0d2e42')],[60,hx('#081f30')]]);
+const JLAND=ramp([[0,hx('#4a5a4e')],[6,hx('#57685a')],[20,hx('#67775c')],
+  [60,hx('#7d8967')],[200,hx('#9aa07f')],[500,hx('#b8b89c')]]);
+const JWET=ramp([[0,hx('#63d6ea')],[0.8,hx('#3aa8dd')],[1.8,hx('#7b5fd0')],[3.5,hx('#d81b7a')]]);
+function floodAt(level){
+  const sub=JK.subs, thr=level+sub;
+  flabel.fill(0); let qh=0,qt=0;
+  // semai dari sel laut sungguhan (elevasi < 0), bukan dari tepi kotak
+  for(let k=0;k<JW*JH;k++) if(jelev[k]<0){ flabel[k]=1; queue[qt++]=k; }
+  while(qh<qt){ const k=queue[qh++], y=(k/JW)|0, x=k%JW;
+    if(x>0){const n=k-1; if(!flabel[n]&&jelev[n]<thr){flabel[n]=1;queue[qt++]=n;}}
+    if(x<JW-1){const n=k+1; if(!flabel[n]&&jelev[n]<thr){flabel[n]=1;queue[qt++]=n;}}
+    if(y>0){const n=k-JW; if(!flabel[n]&&jelev[n]<thr){flabel[n]=1;queue[qt++]=n;}}
+    if(y<JH-1){const n=k+JW; if(!flabel[n]&&jelev[n]<thr){flabel[n]=1;queue[qt++]=n;}} }
+  const img=fctx.createImageData(JW,JH), p=img.data;
+  for(let k=0;k<JW*JH;k++){ const o=k*4, e=jelev[k];
+    if(e<0){ const c=JSEA(Math.min(-e,60)); p[o]=c[0];p[o+1]=c[1];p[o+2]=c[2];p[o+3]=255; }
+    else if(flabel[k]){ const dd=thr-e;
+      const c=JWET(Math.min(dd,3.5));
+      p[o]=c[0];p[o+1]=c[1];p[o+2]=c[2];p[o+3]=255; }
+    else { const c=JLAND(Math.min(e,500));
+      p[o]=c[0];p[o+1]=c[1];p[o+2]=c[2];p[o+3]=255; } }
+  fctx.putImageData(img,0,0);
+  // penanda kota
+  fctx.font='500 8px Archivo, sans-serif'; fctx.textBaseline='middle';
+  const marks=[['Tanjung Priok',106.880,-6.105],['Pluit',106.790,-6.115],['Muara Angke',106.770,-6.105],
+    ['Ancol',106.845,-6.122],['Marunda',106.955,-6.105],['Kota Tua',106.813,-6.135],['Monas',106.827,-6.175],
+    ['Bekasi',106.989,-6.238],['Tangerang',106.630,-6.178]];
+  for(const [nm,lo,la] of marks){
+    const x=(lo-JK.lonW)/JK.cs, y=(JK.latN-la)/JK.cs;
+    if(x<0||y<0||x>JW||y>JH) continue;
+    fctx.beginPath(); fctx.arc(x,y,1.6,0,6.2832); fctx.fillStyle='#fff'; fctx.fill();
+    fctx.fillStyle='rgba(0,0,0,.6)'; fctx.fillText(nm,x+3.6,y+.6);
+    fctx.fillStyle='rgba(255,255,255,.95)'; fctx.fillText(nm,x+3,y); }
+}
+function curveAt(level){
+  const c=JK.curve; // [level, km2, jiwa, kedalaman]
+  for(let i=1;i<c.length;i++){ if(level<=c[i][0]){
+    const t=(level-c[i-1][0])/(c[i][0]-c[i-1][0]);
+    return [c[i-1][1]+t*(c[i][1]-c[i-1][1]), c[i-1][2]+t*(c[i][2]-c[i-1][2]), c[i-1][3]+t*(c[i][3]-c[i-1][3])];}}
+  return c[c.length-1].slice(1);
+}
+function updFlood(){
+  const lv=(+$('#lvl').value)/10;
+  const [a,p,d]=curveAt(lv);
+  $('#lvlv').innerHTML=nf(lv,1).replace('.',',')+' m'+(Math.abs(lv-2.0)<0.06?' — skenario model':'');
+  $('#floodKpi').innerHTML=
+    '<div><span class="v">'+nf(a,0)+'</span><span class="k">km² tergenang</span></div>'+
+    '<div><span class="v">'+nf(p,0)+'</span><span class="k">jiwa di zona</span></div>'+
+    '<div><span class="v">'+nf(d,2).replace('.',',')+'</span><span class="k">m kedalaman rata-rata</span></div>'+
+    '<div><span class="v">0,51</span><span class="k">m amblesan disertakan</span></div>';
+  floodAt(lv);
+}
+$('#lvl').addEventListener('input',updFlood);
+
+/* ================= GRAFIK KURVA GENANGAN ================= */
+function curveChart(){
+  const c=JK.curve, W=480,H=250, L=52,R=54,Tp=14,B=34;
+  const pw=W-L-R, ph=H-Tp-B, maxA=600, maxP=850000;
+  const X=v=>L+v/5*pw, YA=v=>Tp+ph-v/maxA*ph, YP=v=>Tp+ph-v/maxP*ph;
+  let s='';
+  s+='<g font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".55">';
+  for(let i=0;i<=4;i++){const y=Tp+ph-i/4*ph;
+    s+='<line x1="'+L+'" y1="'+y+'" x2="'+(L+pw)+'" y2="'+y+'" stroke="currentColor" stroke-opacity=".16"/>';
+    s+='<text x="'+(L-6)+'" y="'+(y+3.2)+'" text-anchor="end">'+(i*150)+'</text>';
+    s+='<text x="'+(L+pw+6)+'" y="'+(y+3.2)+'">'+(i*212.5>=1?nf(i*212500/1000)+'rb':'0')+'</text>';}
+  for(let v=0;v<=5;v++) s+='<text x="'+X(v)+'" y="'+(H-13)+'" text-anchor="middle">'+v+' m</text>';
+  s+='</g>';
+  s+='<text x="'+L+'" y="'+(H-2)+'" font-size="9.5" font-family="IBM Plex Mono, monospace" fill="currentColor" opacity=".5">tinggi muka air di Teluk Jakarta</text>';
+  const pa=c.map(r=>X(r[0])+','+YA(Math.min(r[1],maxA))).join(' ');
+  const pp=c.map(r=>X(r[0])+','+YP(Math.min(r[2],maxP))).join(' ');
+  s+='<polyline points="'+pa+'" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round"/>';
+  s+='<polyline points="'+pp+'" fill="none" stroke="var(--mmi9)" stroke-width="2.2" stroke-dasharray="5 3" stroke-linejoin="round"/>';
+  c.forEach(r=>{ s+='<circle cx="'+X(r[0])+'" cy="'+YA(Math.min(r[1],maxA))+'" r="2.6" fill="var(--accent)"/>';
+                 s+='<circle cx="'+X(r[0])+'" cy="'+YP(Math.min(r[2],maxP))+'" r="2.6" fill="var(--mmi9)"/>';});
+  s+='<line x1="'+X(2.0)+'" y1="'+Tp+'" x2="'+X(2.0)+'" y2="'+(Tp+ph)+'" stroke="var(--crit)" stroke-width="1.2" stroke-dasharray="3 3"/>';
+  s+='<text x="'+(X(2.0)+5)+'" y="'+(Tp+11)+'" font-size="9.5" font-family="IBM Plex Mono, monospace" fill="var(--crit)">skenario 2,0 m</text>';
+  $('#curveChart').innerHTML=s;
+}
+curveChart();
+
+/* ================= KORBAN ================= */
+$('#casKpi').innerHTML=
+ '<div><span class="v" style="color:var(--crit)">'+nf(T.shakeDead+T.tsuDead)+'</span><span class="k">tanpa evakuasi</span></div>'+
+ '<div><span class="v" style="color:var(--ok)">'+nf(T.shakeDead+T.tsuDeadEvac)+'</span><span class="k">dengan peringatan</span></div>'+
+ '<div><span class="v">'+juta(T.popTsu)+' jt</span><span class="k">jiwa di zona genangan</span></div>';
+function casChart(){
+  const W=460,H=180,L=112,R=16,Tp=10,B=26, pw=W-L-R;
+  const data=[['Guncangan',T.shakeDead,'var(--mmi9)'],
+              ['Tsunami · tanpa evakuasi',T.tsuDead,'var(--crit)'],
+              ['Tsunami · dengan peringatan',T.tsuDeadEvac,'var(--ok)']];
+  const max=1000000, bh=30, gap=14;
+  let s='<g font-family="IBM Plex Mono, monospace" font-size="9.5" fill="currentColor" opacity=".5">';
+  for(let i=0;i<=4;i++){const x=L+i/4*pw;
+    s+='<line x1="'+x+'" y1="'+Tp+'" x2="'+x+'" y2="'+(Tp+3*bh+2*gap)+'" stroke="currentColor" stroke-opacity=".14"/>';
+    s+='<text x="'+x+'" y="'+(H-10)+'" text-anchor="middle">'+(i*250)+'rb</text>';}
+  s+='</g>';
+  data.forEach((d,i)=>{ const y=Tp+i*(bh+gap), w=Math.max(2,d[1]/max*pw);
+    s+='<rect x="'+L+'" y="'+y+'" width="'+w+'" height="'+bh+'" rx="3" fill="'+d[2]+'"/>';
+    s+='<text x="'+(L-8)+'" y="'+(y+bh/2+3.6)+'" text-anchor="end" font-size="11" font-family="Archivo, sans-serif" fill="currentColor">'+d[0]+'</text>';
+    s+='<text x="'+(L+w+7)+'" y="'+(y+bh/2+3.8)+'" font-size="11.5" font-family="IBM Plex Mono, monospace" font-weight="600" fill="currentColor">'+nf(d[1])+'</text>';});
+  $('#casChart').innerHTML=s;
+}
+casChart();
+
+/* ================= VALIDASI ================= */
+const VAL=[
+ ['Okada (1985) — kasus uji terbitan','uz −3,5639e−2 vs acuan −3,564e−2','pass','LULUS'],
+ ['Kalibrasi tsunami vs Tohoku 2011','laut dalam 2,05 m vs pelampung DART ~1,8 m','pass','LULUS'],
+ ['Angkatan dasar laut, parameter Tohoku','model 10,2 m vs terukur 7–10 m','pass','LULUS'],
+ ['Volume air tergeser, parameter Tohoku','model 245 km³ vs 100–180 km³','part','1,4× TINGGI'],
+ ['Tsunami Pangandaran 17 Juli 2006','model 6,0 m vs teramati 5–7 m','pass','LULUS'],
+ ['Waktu tiba Pangandaran 2006','model 25–50 mnt vs tercatat 30–45 mnt','pass','LULUS'],
+ ['Jalur Selat Sunda → Teluk Jakarta (1883)','tiba 164 mnt vs ~2,5 jam tercatat','pass','LULUS'],
+ ['Redaman Jakarta/Merak','model 10,6% vs 1883: 5,3%','part','FAKTOR 2'],
+ ['GMPE vs Tohoku 2011, Sendai','PGA 0,363 g / PGV 72 cm/s vs 0,3–1,0 g / 50–100','pass','LULUS'],
+ ['Kestabilan numerik (uji awal)','meledak jadi 1.099 m — batas domain','part','DIPERBAIKI'],
+ ['Populasi GHSL vs data resmi','119 jt di petak 100–110°BT · sesuai BPS','pass','LULUS'],
+];
+$('#valid').innerHTML=VAL.map(v=>'<div class="vrow"><div class="vt"><span class="vn">'+v[0]+
+ '</span><span class="vd">'+v[1]+'</span></div><span class="verdict '+v[2]+'">'+v[3]+'</span></div>').join('');
+const CHAIN=[
+ ['Batimetri &amp; topografi','GMRT 1 km → grid 684×512, sel 1,96 km'],
+ ['Geometri palung','titik terdalam per kolom bujur, dihaluskan — 1.454 km'],
+ ['Bidang patahan','44 subpatahan × 7 lajur, dip 13°, lebar 200 km, slip meruncing'],
+ ['Deformasi dasar laut','Okada (1985), dislokasi persegi elastik'],
+ ['Tsunami','air dangkal 2D koordinat bola, Arakawa-C, Δt 4,2 s × 5.143 langkah'],
+ ['Kekerasan tanah','Vs30 dari kemiringan topografi (Wald &amp; Allen 2007)'],
+ ['Guncangan','BC Hydro / Abrahamson dkk. (2016) → MMI Worden dkk. (2012)'],
+ ['Likuefaksi','Zhu dkk. (2017), model pesisir, curah hujan 1.900 mm'],
+ ['Penduduk','GHSL 2025 resolusi 100 m × batas GADM 4.1 (116 kab/kota)'],
+ ['Korban','PAGER — Jaiswal &amp; Wald (2010), koefisien Indonesia'],
+ ['Definisi tinggi air','pesisir = sel laut 0–60 m; daratan = sel darat tergenang &gt;0,3 m'],
+ ['Nilai per wilayah','nilai TERBERAT dalam wilayah itu, bukan rata-rata'],
+];
+$('#chain').innerHTML=CHAIN.map((c,i)=>'<div class="vrow"><div class="vt"><span class="vn">'+c[0]+
+ '</span><span class="vd">'+c[1]+'</span></div><span class="verdict" style="color:var(--ink3);border:1px solid var(--line)">'+
+ String(i+1).padStart(2,'0')+'</span></div>').join('');
+$('#srcs').innerHTML=[
+ 'Batimetri — GMRT Grid Server, Lamont-Doherty Earth Observatory',
+ 'Katalog gempa — USGS FDSN Event API, 1.200 peristiwa M≥4,5 sejak 1970',
+ 'Penduduk — GHSL GHS-POP R2023A epoch 2025, JRC Komisi Eropa, 100 m',
+ 'Batas wilayah — GADM 4.1 tingkat kabupaten/kota',
+ 'Koefisien GMPE — tabel COEFFS OpenQuake (gem/oq-engine), abrahamson_2015',
+ 'Acuan sejarah — Krakatau 1883 (36.417 korban), Pangandaran 2006, Tohoku 2011',
+ 'Magnitudo maksimum segmen — BMKG &amp; Pusgen: Selat Sunda 8,7 · Enggano 8,4',
+].map(s=>'<span>'+s+'</span>').join('');
+
+/* ================= MULAI ================= */
+setLegend(); drawOverlay(); buildGauges(); render(); updFlood();
+}  /* ---- akhir start() ---- */
+
+/* ---- boot: muat data lalu jalankan ---- */
+const lmsg=$('#lmsg'), lbar=$('#lbar');
+loadAll(function(done,total){
+  if(lbar) lbar.style.width=Math.round(100*done/total)+'%';
+  if(lmsg) lmsg.textContent='memuat data peta… '+done+'/'+total;
+}).then(function(B){
+  const el=$('#loading'); if(el) el.remove();
+  start(B);
+}).catch(function(err){
+  if(lmsg) lmsg.textContent='Gagal memuat data peta. Periksa koneksi lalu muat ulang halaman.';
+  if(lbar){ lbar.style.width='100%'; lbar.style.background='var(--crit)'; }
+  console.error(err);
+});
+})();
+</script>

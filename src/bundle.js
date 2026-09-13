@@ -32,7 +32,7 @@ const out={
   trenchS:meta.trenchS, cities:CITIES, quakes:Q,
   impact:impact.rows.map(r=>({n:r.nama,p:r.prov,pop:Math.round(r.pop),mmi:+r.mmi.toFixed(2),
      rr:+r.rr.toFixed(0),m8:Math.round(r.mmi8),liq:Math.round(r.liqPop),
-     tp:Math.round(r.tsuPop),th:+r.tsuMax.toFixed(1),ta:r.tArr<1e9?Math.round(r.tArr):-1,
+     tp:Math.round(r.tsuPop),th:+r.tsuMax.toFixed(1),tl:+(r.tsuLand||0).toFixed(1),ta:r.tArr<1e9?Math.round(r.tArr):-1,
      uz:+r.uzMin.toFixed(2),sd:Math.round(r.shakeDead),td:Math.round(r.tsuDead),tde:Math.round(r.tsuDeadE)})),
   totals:{pop:impact.totPop,shakeDead:impact.totShakeDead,tsuDead:impact.totTsuDead,
           tsuDeadEvac:impact.totTsuDeadEvac,popTsu:impact.popTsu},

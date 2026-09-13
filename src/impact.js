@@ -54,7 +54,7 @@ for(let k=0;k<N;k++){
   const o=owner[k]; const p=POPg[k]; if(p<=0) continue;
   totPop+=p;
   const key=o>=0? o : -1;
-  if(!agg[key]) agg[key]={pop:0,mmiW:0,mmi8:0,mmi7:0,liqPop:0,tsuPop:0,tsuMax:0,tArr:1e9,uzMin:0,shakeDead:0,tsuDead:0,tsuDeadE:0,rr:1e9};
+  if(!agg[key]) agg[key]={pop:0,mmiW:0,mmi8:0,mmi7:0,liqPop:0,tsuPop:0,tsuMax:0,tsuLand:0,tArr:1e9,uzMin:0,shakeDead:0,tsuDead:0,tsuDeadE:0,rr:1e9};
   const a=agg[key];
   a.pop+=p; a.mmiW+=p*MMI[k];
   if(MMI[k]>=8)a.mmi8+=p; if(MMI[k]>=7)a.mmi7+=p;
@@ -71,7 +71,10 @@ for(let k=0;k<N;k++){
     const late=(tArr[k]>0&&tArr[k]<1800);            // <30 menit = sulit evakuasi
     const te=td*(late?0.45:0.12); a.tsuDeadE+=te; totTsuDeadEvac+=te;
   }
-  if(etaMax[k]>a.tsuMax && (elev[k]<0&&elev[k]>-60 || depth>0.3)) a.tsuMax=etaMax[k];
+  // SATU definisi: tinggi muka air maksimum di perairan pesisir (laut 0-60 m).
+  // Nilai di daratan tergenang dicatat terpisah, tidak dicampur.
+  if(elev[k]<0 && elev[k]>=-60 && etaMax[k]>a.tsuMax) a.tsuMax=etaMax[k];
+  if(elev[k]>=0 && depth>0.3 && etaMax[k]>a.tsuLand) a.tsuLand=etaMax[k];
   if(tArr[k]>0 && tArr[k]<a.tArr && etaMax[k]>1) a.tArr=tArr[k];
 }
 const rows=Object.entries(agg).filter(([k])=>k>=0).map(([k,a])=>({
