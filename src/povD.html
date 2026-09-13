@@ -468,10 +468,15 @@ $('#view').addEventListener('click',function(e){
   const b=e.currentTarget;
   b.setAttribute('aria-pressed',camMode==='udara');
   b.querySelector('span').textContent=(camMode==='udara')?'Mata':'Udara';
+  b.title=(camMode==='udara')?'Kembali ke pandangan mata':'Pandangan dari udara';
   render(0.016); });
+$('#more').addEventListener('click',function(e){
+  const p=$('#panel'), buka=p.hidden;
+  p.hidden=!buka; e.currentTarget.setAttribute('aria-expanded',buka); });
 $('#sound').addEventListener('click',function(e){ const on=AU.toggle();
   e.currentTarget.setAttribute('aria-pressed',on);
-  e.currentTarget.querySelector('span').textContent=on?'Suara':'Bisu'; });
+  e.currentTarget.querySelector('span').textContent=on?'Suara':'Bisu';
+  e.currentTarget.title=on?'Suara nyala':'Suara mati'; });
 $('#scrub').addEventListener('input',function(e){
   const nt=(+e.target.value)/1000*TOTAL;
   if(nt<tSim){ buildTown(S.key,userElev); ruinFrac=0; }

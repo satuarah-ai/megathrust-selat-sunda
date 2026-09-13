@@ -21,116 +21,148 @@
   --bg:#060f17; --surf:#0d1a24; --surf2:#132531; --surf3:#1c3242;
   --ink:#e7eff4; --ink2:#9cb1be; --ink3:#68808f; --line:#1c303d; --line2:#2b4757;
   --accent:#2ec4d6; --accent2:#63dbe9; --onaccent:#03222a;
-  --mmi7:#ffff00; --mmi8:#ffc800; --mmi9:#ff9100; --mmi10:#ff3020;
   --warn:#f0a232; --crit:#ff5f4d; --ok:#34d399;
+  --glass:rgba(6,16,24,.80); --edge:rgba(120,180,200,.26);
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);overflow:hidden;
   font-family:Archivo,system-ui,-apple-system,Segoe UI,sans-serif;font-size:15px;
   -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
-.mono{font-family:IBM Plex Mono,ui-monospace,monospace;font-variant-numeric:tabular-nums}
-h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
+h1{margin:0;font-weight:700;letter-spacing:-.03em;text-wrap:balance}
 
-/* ---- panggung 3D ---- */
 #stage{position:fixed;inset:0;display:block;touch-action:none}
 #veil{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .5s;
-  background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.55) 100%)}
+  background:radial-gradient(ellipse at center,transparent 42%,rgba(0,0,0,.55) 100%)}
 
-/* ---- HUD ---- */
+/* ---- kerangka HUD: seluruh ruang tengah tetap milik pemandangan ---- */
 .hud{position:fixed;inset:0;pointer-events:none;display:grid;
-  grid-template-rows:auto 1fr auto;padding:10px;gap:10px}
+  grid-template-rows:auto auto 1fr auto;padding:8px;gap:6px;
+  padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
 .hud > *{pointer-events:auto}
-.bar{display:flex;gap:8px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
-.card{background:rgba(6,16,24,.82);border:1px solid rgba(120,180,200,.24);border-radius:9px;
-  backdrop-filter:blur(8px);padding:8px 11px}
-.title{display:grid;gap:2px;min-width:0}
-.title b{font-size:15px;font-weight:600;letter-spacing:-.01em}
-.title span{font-family:IBM Plex Mono,monospace;font-size:10.5px;color:#8fb3c2;letter-spacing:.05em}
-.clock{font-family:IBM Plex Mono,monospace;font-size:17px;font-weight:600;letter-spacing:.02em;
+.spacer{pointer-events:none}
+.card{background:var(--glass);border:1px solid var(--edge);border-radius:9px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+
+/* ---- baris atas ---- */
+.topbar{display:flex;gap:6px;align-items:stretch;justify-content:space-between}
+.tt{padding:6px 10px;display:grid;gap:1px;min-width:0;flex:1 1 auto}
+.tt b{font-size:13.5px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.tt span{font-family:IBM Plex Mono,monospace;font-size:9.5px;color:#8fb3c2;letter-spacing:.04em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ck{padding:6px 10px;display:grid;gap:1px;justify-items:end;flex:0 0 auto}
+.clock{font-family:IBM Plex Mono,monospace;font-size:14px;font-weight:600;letter-spacing:.02em;
   color:var(--accent2);font-variant-numeric:tabular-nums;white-space:nowrap}
-.phase{font-family:IBM Plex Mono,monospace;font-size:10.5px;letter-spacing:.12em;
-  text-transform:uppercase;color:#8fb3c2;margin-top:1px}
+.phase{font-family:IBM Plex Mono,monospace;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:#8fb3c2;white-space:nowrap}
 
-.mid{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none;overflow:hidden}
-.mid > *{pointer-events:auto}
-.readout{display:grid;gap:7px;min-width:118px}
-.ro{display:grid;gap:1px}
-.ro .k{font-family:IBM Plex Mono,monospace;font-size:9.5px;letter-spacing:.1em;
-  text-transform:uppercase;color:#7f9dab;line-height:1.3}
-.ro .v{font-family:IBM Plex Mono,monospace;font-size:16px;font-weight:600;line-height:1.15;
+/* ---- strip pembacaan: satu pita tipis, bukan kartu besar ---- */
+.strip{padding:6px 9px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px}
+.rd{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap;min-width:0}
+.rd i{font-family:IBM Plex Mono,monospace;font-size:8.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:#7f9dab;font-style:normal}
+.rd b{font-family:IBM Plex Mono,monospace;font-size:13px;font-weight:600;
   font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.ro .v small{font-size:.58em;font-weight:500;color:#8fb3c2;letter-spacing:0}
-#accTrace{display:block;width:118px;height:30px;border-radius:4px;background:rgba(10,26,38,.7)}
+.rd b small{font-size:.62em;font-weight:500;color:#8fb3c2}
+#accTrace{display:block;width:120px;height:22px;border-radius:3px;
+  background:rgba(10,26,38,.6);margin-left:auto}
 
-/* ---- dok kontrol bawah ---- */
-.dock{display:grid;gap:6px;background:rgba(6,16,24,.88);border:1px solid rgba(120,180,200,.24);
-  border-radius:12px;backdrop-filter:blur(10px);padding:9px 10px}
-.sliders{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.dock{padding:8px 9px}
-.sl{display:grid;gap:2px;min-width:0}
-.sl label{font-family:IBM Plex Mono,monospace;font-size:9.5px;letter-spacing:.07em;
-  text-transform:uppercase;color:#8fb3c2;display:flex;justify-content:space-between;gap:6px;
-  white-space:nowrap;overflow:hidden}
-.sl label b{color:var(--accent2);font-weight:600}
-.sl input{width:100%;accent-color:var(--accent);height:20px;margin:0}
-.scrub{width:100%;accent-color:var(--accent);height:20px;margin:0}
-.acts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.btn{appearance:none;border:1px solid rgba(120,180,200,.28);background:rgba(14,32,45,.9);
-  color:var(--ink);font:600 12.5px/1.15 Archivo,sans-serif;padding:9px 6px;border-radius:9px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;min-height:42px;
-  text-decoration:none;min-width:0}
+/* ---- dok bawah: setipis mungkin ---- */
+.dock{display:grid;gap:6px}
+.scrub{width:100%;accent-color:var(--accent);height:16px;margin:0;
+  background:transparent;cursor:pointer}
+.acts{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.btn{appearance:none;border:1px solid var(--edge);background:var(--glass);color:var(--ink);
+  font:600 12.5px/1.1 Archivo,sans-serif;padding:0 6px;border-radius:10px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;
+  text-decoration:none;min-width:0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .btn svg{flex:0 0 auto}
 .btn:hover{border-color:var(--accent);color:var(--accent2)}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn.pri{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
 .btn.pri:hover{background:var(--accent2);color:var(--onaccent)}
-.btn[aria-pressed=true]:not(.pri){border-color:var(--accent);color:var(--accent2);
-  background:rgba(46,196,214,.14)}
+.btn[aria-pressed=true]:not(.pri),.btn[aria-expanded=true]{border-color:var(--accent);
+  color:var(--accent2);background:rgba(46,196,214,.16)}
 .btn[disabled]{opacity:.4;cursor:not-allowed}
-.btn.sm{font-size:11.5px;font-weight:500;min-height:38px;padding:7px 5px;gap:5px}
+.btn.wide{flex:1 1 auto;padding:0 14px}
+
+/* ---- panel tambahan, tersembunyi sampai diminta ---- */
+.panel{display:grid;gap:8px;padding:9px 10px;background:var(--glass);
+  border:1px solid var(--edge);border-radius:11px;backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px)}
+.sliders{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sl{display:grid;gap:2px;min-width:0}
+.sl label{font-family:IBM Plex Mono,monospace;font-size:9px;letter-spacing:.06em;
+  text-transform:uppercase;color:#8fb3c2;display:flex;justify-content:space-between;gap:6px;
+  white-space:nowrap;overflow:hidden}
+.sl label b{color:var(--accent2);font-weight:600}
+.sl input{width:100%;accent-color:var(--accent);height:20px;margin:0}
+.opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
 .selwrap{position:relative;display:flex;align-items:center;gap:5px;min-width:0;
-  border:1px solid rgba(120,180,200,.28);background:rgba(14,32,45,.9);border-radius:9px;
-  padding-left:8px;color:#8fb3c2}
-.selwrap.sm{min-height:38px}
+  border:1px solid var(--edge);background:rgba(14,32,45,.8);border-radius:9px;
+  padding-left:8px;color:#8fb3c2;min-height:40px}
 .selwrap select{appearance:none;border:0;background:transparent;color:var(--ink);
-  font:500 11.5px/1 Archivo,sans-serif;padding:7px 20px 7px 0;cursor:pointer;min-width:0;
-  width:100%;text-overflow:ellipsis}
-.selwrap::after{content:"";position:absolute;right:8px;top:50%;width:5px;height:5px;pointer-events:none;
-  border-right:1.6px solid #8fb3c2;border-bottom:1.6px solid #8fb3c2;transform:translateY(-70%) rotate(45deg)}
+  font:500 11.5px/1 Archivo,sans-serif;padding:9px 20px 9px 0;cursor:pointer;min-width:0;width:100%}
+.selwrap::after{content:"";position:absolute;right:8px;top:50%;width:5px;height:5px;
+  pointer-events:none;border-right:1.6px solid #8fb3c2;border-bottom:1.6px solid #8fb3c2;
+  transform:translateY(-70%) rotate(45deg)}
 .selwrap select:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-radius:6px}
-.clockcard{text-align:right}
-.readout.right{text-align:right}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.opts .btn{min-height:40px;font-size:11.5px;font-weight:500}
+
+/* ---- layar sempit: tombol jadi ikon saja ---- */
+@media(max-width:560px){
+  .acts .btn span{display:none}
+  .acts .btn{padding:0;gap:0;min-height:48px;border-radius:12px}
+  .strip{gap:3px 11px;padding:5px 8px}
+  .rd b{font-size:12px}
+  .rd i{font-size:8px}
+  #accTrace{width:84px;height:18px}
+  .opts{grid-template-columns:1fr 1fr}
+  .opts .btn.wide{grid-column:1/-1}
+}
+@media(max-width:400px){
+  .hud{padding:6px;gap:5px}
+  .tt b{font-size:12.5px}
+  .clock{font-size:13px}
+  .sliders{grid-template-columns:1fr}
+  .acts{gap:4px}
+}
+@media(max-height:680px){
+  .strip .rd:nth-child(n+5){display:none}
+  #accTrace{display:none}
+}
 
 /* ---- panel pembuka ---- */
-#intro{position:fixed;inset:0;z-index:20;background:rgba(4,11,17,.94);backdrop-filter:blur(10px);
-  display:grid;place-items:center;padding:20px;overflow-y:auto}
-.ibox{max-width:560px;display:grid;gap:16px}
-.ibox h1{font-size:clamp(26px,6vw,40px);line-height:1.05;letter-spacing:-.03em;font-weight:700}
-.ibox p{margin:0;font-family:Newsreader,Georgia,serif;font-size:16.5px;line-height:1.55;color:var(--ink2)}
+#intro{position:fixed;inset:0;z-index:20;background:rgba(4,11,17,.95);
+  backdrop-filter:blur(10px);display:grid;place-items:center;padding:18px;overflow-y:auto}
+.ibox{max-width:560px;display:grid;gap:14px}
+.ibox h1{font-size:clamp(25px,6vw,38px);line-height:1.05}
+.ibox p{margin:0;font-family:Newsreader,Georgia,serif;font-size:16px;line-height:1.55;color:var(--ink2)}
 .ibox p strong{color:var(--ink);font-weight:500}
 .eyebrow{font-family:IBM Plex Mono,monospace;font-size:10.5px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--ink3)}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:1px;
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(124px,1fr));gap:1px;
   background:var(--line);border:1px solid var(--line);border-radius:9px;overflow:hidden}
-.grid2 div{background:var(--surf);padding:10px 12px;display:grid;gap:2px}
-.grid2 .v{font-family:IBM Plex Mono,monospace;font-size:19px;font-weight:600;letter-spacing:-.03em;
+.grid2 div{background:var(--surf);padding:9px 11px;display:grid;gap:2px}
+.grid2 .v{font-family:IBM Plex Mono,monospace;font-size:18px;font-weight:600;letter-spacing:-.03em;
   font-variant-numeric:tabular-nums}
-.grid2 .k{font-family:IBM Plex Mono,monospace;font-size:9.5px;letter-spacing:.08em;
+.grid2 .k{font-family:IBM Plex Mono,monospace;font-size:9px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--ink3)}
-.note{font-size:12.5px;color:var(--ink3);line-height:1.5}
+.note{font-size:12.5px;color:var(--ink3);line-height:1.5;font-family:Archivo,sans-serif}
 .note a{color:var(--accent)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
 /* ---- pesan kejadian ---- */
-#toast{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:15;
-  pointer-events:none;text-align:center;opacity:0;transition:opacity .35s}
-#toast b{display:block;font-size:clamp(21px,5.5vw,34px);font-weight:700;letter-spacing:-.02em;
-  text-shadow:0 2px 20px rgba(0,0,0,.9)}
-#toast span{display:block;font-family:IBM Plex Mono,monospace;font-size:12px;color:#cfe6ef;
-  letter-spacing:.08em;margin-top:5px;text-shadow:0 2px 12px rgba(0,0,0,.9)}
+#toast{position:fixed;left:50%;top:34%;transform:translate(-50%,-50%);z-index:15;
+  pointer-events:none;text-align:center;opacity:0;transition:opacity .35s;padding:0 16px;
+  max-width:min(92vw,520px)}
+#toast b{display:block;font-size:clamp(20px,5.5vw,32px);font-weight:700;letter-spacing:-.02em;
+  text-shadow:0 2px 20px rgba(0,0,0,.95)}
+#toast span{display:block;font-family:IBM Plex Mono,monospace;font-size:11.5px;color:#cfe6ef;
+  letter-spacing:.06em;margin-top:5px;text-shadow:0 2px 12px rgba(0,0,0,.95)}
 
 #load{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:#060f17}
 #load div{display:grid;gap:9px;justify-items:center}
@@ -138,27 +170,7 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
 .spin{width:26px;height:26px;border:2px solid rgba(120,180,200,.25);border-top-color:var(--accent);
   border-radius:50%;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-
-@media(max-width:400px){
-  .hud{padding:7px;gap:7px}
-  .card{padding:6px 8px}
-  .readout{min-width:88px;gap:5px}
-  .ro .k{font-size:8.5px;letter-spacing:.06em}
-  .ro .v{font-size:13px}
-  #accTrace{width:88px;height:24px}
-  .clock{font-size:14px}
-  .title b{font-size:13px}
-  .title span{font-size:9.5px}
-  .acts{grid-template-columns:repeat(2,1fr)}
-  .opts{grid-template-columns:repeat(2,1fr)}
-  .btn{font-size:12px;min-height:44px}
-  .btn.sm{min-height:40px;font-size:11px}
-}
-@media(max-width:360px){ .sliders{grid-template-columns:1fr} }
-@media(max-height:820px){ .dock{gap:5px;padding:7px 8px} .btn{min-height:40px}
-  .btn.sm{min-height:36px} .sl input,.scrub{height:18px} }
-@media(min-height:0px) and (max-height:560px){ .mid{display:none} }
-@media(prefers-reduced-motion:reduce){.spin{animation:none}}
+@media(prefers-reduced-motion:reduce){.spin{animation:none}#veil,#toast{transition:none}}
 </style>
 
 </head>
@@ -168,73 +180,76 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
 <div id="toast"><b></b><span></span></div>
 
 <div class="hud">
-  <div class="bar">
-    <div class="card title">
+  <div class="topbar">
+    <div class="card tt">
       <b id="locName">Labuan</b>
       <span id="locDesc">memuat…</span>
     </div>
-    <div class="card clockcard">
-      <div class="clock" id="clock">T + 00:00:00</div>
-      <div class="phase" id="phase">menunggu</div>
+    <div class="card ck">
+      <span class="clock" id="clock">T + 00:00:00</span>
+      <span class="phase" id="phase">menunggu</span>
     </div>
   </div>
 
-  <div class="mid">
-    <div class="card readout">
-      <div class="ro"><span class="k">Guncangan MMI</span><span class="v" id="roMmi">–</span></div>
-      <div class="ro"><span class="k">Percepatan</span><span class="v" id="roAcc">0,000 <small>g</small></span></div>
-      <div class="ro"><span class="k">Bangunan runtuh</span><span class="v" id="roRuin">0 <small>%</small></span></div>
-      <canvas id="accTrace" width="236" height="60"></canvas>
-    </div>
-    <div class="card readout right">
-      <div class="ro"><span class="k">Muka air laut</span><span class="v" id="roSea">0,0 <small>m</small></span></div>
-      <div class="ro"><span class="k">Air di kakimu</span><span class="v" id="roDepth">kering</span></div>
-      <div class="ro"><span class="k">Air datang</span><span class="v" id="roEta">–</span></div>
-    </div>
+  <div class="card strip">
+    <span class="rd"><i>MMI</i><b id="roMmi">–</b></span>
+    <span class="rd"><i>Percepatan</i><b id="roAcc">0,000 <small>g</small></b></span>
+    <span class="rd"><i>Runtuh</i><b id="roRuin">0 <small>%</small></b></span>
+    <span class="rd"><i>Muka air</i><b id="roSea">0,0 <small>m</small></b></span>
+    <span class="rd"><i>Di kakimu</i><b id="roDepth">kering</b></span>
+    <span class="rd"><i>Air datang</i><b id="roEta">–</b></span>
+    <canvas id="accTrace" width="200" height="36"></canvas>
   </div>
+
+  <div class="spacer"></div>
 
   <div class="dock">
-    <div class="sliders">
-      <div class="sl">
-        <label>Ketinggian tempatmu <b id="elevV">2 m</b></label>
-        <input type="range" id="elevS" min="0" max="30" step="1" value="2" aria-label="Ketinggian tanah tempatmu berdiri">
-      </div>
-      <div class="sl">
-        <label>Goyangan terasa <b id="swayV">1,8×</b></label>
-        <input type="range" id="swayS" min="0" max="40" step="1" value="18" aria-label="Penguat goyangan yang terasa">
-      </div>
-    </div>
     <input type="range" class="scrub" id="scrub" min="0" max="1000" value="0" aria-label="Geser waktu">
     <div class="acts">
-      <button class="btn pri" id="start">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      <button class="btn pri" id="start" title="Ulang dari awal" aria-label="Ulang dari awal">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
         <span>Ulang</span></button>
-      <button class="btn" id="pause">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+      <button class="btn" id="pause" title="Jeda" aria-label="Jeda">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
         <span>Jeda</span></button>
-      <button class="btn" id="toWave">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3"/><path d="M2 20c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3"/><path d="M12 3v6M9 6l3-3 3 3"/></svg>
+      <button class="btn" id="toWave" title="Lompat ke saat air datang" aria-label="Lompat ke saat air datang">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3"/><path d="M2 20c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3 2.5 3 5 3"/><path d="M12 3v6M9 6l3-3 3 3"/></svg>
         <span>Lompat</span></button>
-      <button class="btn" id="view" aria-pressed="false">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6-9 6z"/><path d="M3 15l9 6 9-6"/></svg>
+      <button class="btn" id="view" aria-pressed="false" title="Pandangan dari udara" aria-label="Pandangan dari udara">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6-9 6z"/><path d="M3 15l9 6 9-6"/></svg>
         <span>Udara</span></button>
-    </div>
-    <div class="opts">
-      <button class="btn sm" id="sound" aria-pressed="true">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 8.5a5 5 0 0 1 0 7"/></svg>
+      <button class="btn" id="sound" aria-pressed="true" title="Suara" aria-label="Nyala-matikan suara">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 8.5a5 5 0 0 1 0 7"/></svg>
         <span>Suara</span></button>
-      <span class="selwrap sm">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
-        <select id="site" aria-label="Pilih lokasi"></select></span>
-      <span class="selwrap sm">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-        <select id="speed" aria-label="Kecepatan waktu">
-          <option value="1">1×</option><option value="10">10×</option>
-          <option value="60" selected>60×</option><option value="300">300×</option>
-        </select></span>
-      <a class="btn sm" href="index.html">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>
-        <span>Peta</span></a>
+      <button class="btn" id="more" aria-expanded="false" title="Pengaturan lain" aria-label="Pengaturan lain">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg>
+        <span>Lain</span></button>
+    </div>
+    <div class="panel" id="panel" hidden>
+      <div class="sliders">
+        <div class="sl">
+          <label for="elevS">Ketinggian tempatmu <b id="elevV">2 m</b></label>
+          <input type="range" id="elevS" min="0" max="30" step="1" value="2">
+        </div>
+        <div class="sl">
+          <label for="swayS">Goyangan terasa <b id="swayV">1,8×</b></label>
+          <input type="range" id="swayS" min="0" max="40" step="1" value="18">
+        </div>
+      </div>
+      <div class="opts">
+        <span class="selwrap">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+          <select id="site" aria-label="Pilih lokasi"></select></span>
+        <span class="selwrap">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <select id="speed" aria-label="Kecepatan waktu">
+            <option value="1">1×</option><option value="10">10×</option>
+            <option value="60" selected>60×</option><option value="300">300×</option>
+          </select></span>
+        <a class="btn wide" href="index.html">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>
+          <span>Peta &amp; angka</span></a>
+      </div>
     </div>
   </div>
 </div>
@@ -251,16 +266,16 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
       Tabel di <a href="index.html">halaman peta</a> menampilkan nilai terberat se-kabupaten, jadi
       angkanya bisa lebih besar untuk nama wilayah yang sama. Keduanya dari solver yang sama.</p>
     <div class="grid2" id="introFigs"></div>
-    <p class="note">Suara disintesis dari data yang sama. Pakai earphone kalau ada — sebagian besar
-      energinya di frekuensi rendah. Tombol <b>Dari udara</b> memperlihatkan gelombang menggulung
-      dari laut ke darat.</p>
+    <p class="note">Tombol <b>lapisan</b> di bawah memperlihatkan gelombang menggulung dari laut ke
+      darat. Tombol <b>&hellip;</b> membuka penggeser ketinggian tempatmu dan pilihan lokasi.
+      Suara disintesis dari data yang sama — pakai earphone kalau ada.</p>
     <p class="note"><strong style="color:var(--warn)">Peringatan:</strong> guncangan layar, suara
       frekuensi rendah, dan gambaran kehancuran. Bisa memicu mual, pusing, atau kecemasan. Kalau kamu
       punya riwayat epilepsi fotosensitif, vertigo, atau trauma bencana, sebaiknya lewati halaman ini.
       Goyangan bisa dikecilkan sampai nol.</p>
     <div class="row">
-      <button class="btn pri" id="go">Saya paham, mulai</button>
-      <a class="btn" href="index.html">Kembali ke peta</a>
+      <button class="btn pri wide" id="go">Saya paham, mulai</button>
+      <a class="btn wide" href="index.html">Kembali ke peta</a>
     </div>
     <p class="note">Skenario ini bukan prakiraan. BMKG dan Pusgen menaksir magnitudo maksimum
       segmen Selat Sunda di angka 8,7. Rujukan resmi tetap BMKG dan BNPB.</p>
@@ -939,10 +954,15 @@ $('#view').addEventListener('click',function(e){
   const b=e.currentTarget;
   b.setAttribute('aria-pressed',camMode==='udara');
   b.querySelector('span').textContent=(camMode==='udara')?'Mata':'Udara';
+  b.title=(camMode==='udara')?'Kembali ke pandangan mata':'Pandangan dari udara';
   render(0.016); });
+$('#more').addEventListener('click',function(e){
+  const p=$('#panel'), buka=p.hidden;
+  p.hidden=!buka; e.currentTarget.setAttribute('aria-expanded',buka); });
 $('#sound').addEventListener('click',function(e){ const on=AU.toggle();
   e.currentTarget.setAttribute('aria-pressed',on);
-  e.currentTarget.querySelector('span').textContent=on?'Suara':'Bisu'; });
+  e.currentTarget.querySelector('span').textContent=on?'Suara':'Bisu';
+  e.currentTarget.title=on?'Suara nyala':'Suara mati'; });
 $('#scrub').addEventListener('input',function(e){
   const nt=(+e.target.value)/1000*TOTAL;
   if(nt<tSim){ buildTown(S.key,userElev); ruinFrac=0; }

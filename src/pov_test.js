@@ -58,7 +58,15 @@ function raw(msg){const i=++id;
       acc: txt('roAcc'), laut: txt('roSea'), dalam: txt('roDepth'), eta: txt('roEta'),
       lokasi: txt('locName'),
       opsiLokasi: document.getElementById('site').options.length,
-      audio: (function(){try{return typeof (window.AudioContext||window.webkitAudioContext)==='function';}catch(e){return false;}})()
+      audio: (function(){try{return typeof (window.AudioContext||window.webkitAudioContext)==='function';}catch(e){return false;}})(),
+      tutup: (function(){
+        var H=de.clientHeight, W=de.clientWidth, m=[];
+        ['.topbar','.strip','.dock','#intro'].forEach(function(sel){
+          var e=document.querySelector(sel); if(!e||e.offsetParent===null) return;
+          var r=e.getBoundingClientRect(); if(r.height>0) m.push([r.top,r.bottom]);});
+        var tot=0; m.forEach(function(a){tot+=Math.min(a[1],H)-Math.max(a[0],0);});
+        return Math.round(100*tot/H);})(),
+      panel: !!(document.getElementById('panel')&&!document.getElementById('panel').hidden)
     });})()`;
   const r=await S('Runtime.evaluate',{expression:probe,returnByValue:true});
   const info=JSON.parse(r.result.value);
@@ -70,6 +78,8 @@ function raw(msg){const i=++id;
   console.log('  MMI / percepatan  : '+info.mmi+'  |  '+info.acc);
   console.log('  muka air / kaki   : '+info.laut+'  |  '+info.dalam+'  |  '+info.eta);
   console.log('  Web Audio         : '+(info.audio?'tersedia':'tidak ada'));
+  console.log('  layar tertutup HUD: '+info.tutup+'%  (pemandangan '+(100-info.tutup)+'%)');
+  console.log('  panel tambahan    : '+(info.panel?'terbuka':'tertutup'));
   console.log('  galat konsol      : '+(errs.length?errs.length:'nihil'));
   errs.slice(0,8).forEach(e=>console.log('      ! '+e));
   const shot=await S('Page.captureScreenshot',{format:'png'});
