@@ -24,7 +24,7 @@ const HEAD='<!doctype html>\n<html lang="id">\n<head>\n'+
 const html=HEAD+A+'\n</head>\n<body>\n'+B+'\n'+
   '<script src="'+THREE_URL+'"></'+'script>\n'+
   '<script>window.__POV='+JSON.stringify(pov)+';'+S+'\n'+
-  C+'\n'+Dd+'\n</body>\n</html>\n';
+  C+'\n'+Dd+GC+'\n</body>\n</html>\n';
 const OUT=path.join('site','pov.html');
 fs.writeFileSync(OUT,html);
 

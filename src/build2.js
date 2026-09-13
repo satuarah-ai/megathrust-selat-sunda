@@ -86,7 +86,7 @@ const HEAD='<!doctype html>\n<html lang="id">\n<head>\n'+
 '<meta name="twitter:card" content="summary_large_image">\n'+
 '<link rel="icon" href="'+FAV+'">\n'+
 '<style>:root{color-scheme:light dark}html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>\n';
-const web=HEAD+A+'\n</head>\n<body>\n'+[Bh,physBlock,physRun,dataBlock(false),Ch,Dh].join('\n')+'\n</body>\n</html>\n';
+const web=HEAD+A+'\n</head>\n<body>\n'+[Bh,physBlock,physRun,dataBlock(false),Ch,Dh].join('\n')+GC+'\n</body>\n</html>\n';
 fs.writeFileSync(path.join(OUT,'index.html'),web);
 fs.writeFileSync(path.join(OUT,'.nojekyll'),'');
 if(fs.existsSync('og.jpg')) fs.copyFileSync('og.jpg',path.join(OUT,'og.jpg'));

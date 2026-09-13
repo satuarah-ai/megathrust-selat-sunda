@@ -2073,5 +2073,20 @@ loadAll(function(done,total){
 })();
 </script>
 
+<!-- analitik: GoatCounter, tanpa cookie, tanpa data pribadi -->
+<script data-goatcounter="https://satuarah.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script>(function(){
+ function gc(n){ if(window.goatcounter&&window.goatcounter.count) window.goatcounter.count({path:n,event:true}); }
+ window.__gc=gc;
+ var map={run:'peta/jalankan-animasi',go:'3d/mulai',start:'3d/ulang',toWave:'3d/lompat-air',view:'3d/udara',cine:'3d/sinema',sound:'3d/suara',more:'3d/lainnya',pause:'3d/jeda'};
+ document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('[id],a,button'); if(!b) return;
+  if(b.id&&map[b.id]) gc(map[b.id]);
+  var h=(b.getAttribute&&b.getAttribute('href'))||'';
+  if(h==='pov.html') gc('peta/ke-3d'); if(h==='index.html') gc('3d/ke-peta'); if(/[.]mp4$/.test(h)) gc('peta/unduh-video');
+  var lay=b.getAttribute&&b.getAttribute('data-layer'); if(lay) gc('peta/lapisan-'+lay); });
+ document.addEventListener('change',function(e){ var t=e.target; if(!t||!t.id) return;
+  if(t.id==='site') gc('3d/lokasi-'+t.value); if(t.id==='qual') gc('peta/mutu-'+t.value); if(t.id==='speed') gc('3d/kecepatan-'+t.value); if(t.id==='elevS') gc('3d/geser-ketinggian'); });
+})();</script>
+
 </body>
 </html>
