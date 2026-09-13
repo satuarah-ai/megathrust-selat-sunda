@@ -11,9 +11,7 @@ sendiri di sesi berikutnya) bisa melanjutkan tanpa mengulang dari nol.
 | Simulasi 3D POV (publik) | https://satuarah-ai.github.io/megathrust-selat-sunda/pov.html |
 | Video 55 detik (H.264) | https://satuarah-ai.github.io/megathrust-selat-sunda/megathrust_labuan.mp4 |
 | Repositori | https://github.com/satuarah-ai/megathrust-selat-sunda |
-| Analitik | https://satuarah.goatcounter.com (akun kanindraofficial@gmail.com) |
-| Artifact claude.ai (privat) | https://claude.ai/code/artifact/30fb8611-434b-4da5-8091-2a4c6684c609 |
-| Folder lokal | `C:\Users\Legion\Projects\megathrust-selat-sunda` |
+| Analitik | GoatCounter (rincian akun di catatan pribadi, tidak dipublikasikan) |
 
 Akun GitHub: `satuarah-ai` (nama tampilan "satuarah"; nama `satuarah` polos sebenarnya
 masih kosong bila suatu saat ingin diganti — ganti nama akan mematikan link github.io lama).
@@ -101,7 +99,7 @@ ambil tabel OpenQuake); rigiditas 2006 (tsunami earthquake, μ 1e10).
 ## Cara memperbarui situs
 
 ```
-cd C:\Users\Legion\Projects\megathrust-selat-sunda\src
+cd src
 node build2.js      # rakit index.html + data (memanggil build_pov.js di akhir)
 node build_pov.js   # (bila hanya POV) rakit pov.html
 node killer.js      # audit fisika/visual POV      -> harus 0 temuan
@@ -122,9 +120,7 @@ Selalu matikan cache (`Network.setCacheDisabled`) saat menguji alamat live.
 
 ## Hal terbuka
 
-- **Token GitHub `deploy-megathrust` terpapar di percakapan dan belum dicabut** —
-  cabut di github.com/settings/tokens; buat baru lewat berkas/clipboard, jangan lewat chat
-- Verifikasi email GoatCounter (spanduk biru di dasbor)
+- Verifikasi email di dasbor analitik
 - Opsional: Microsoft Clarity (heatmap & rekaman sesi; butuh pemberitahuan cookie),
   tautan pendek bit.ly untuk hitung klik, formulir kontak sukarela
 - Opsional: nama pemegang hak cipta di `LICENSE` masih "Indra"
