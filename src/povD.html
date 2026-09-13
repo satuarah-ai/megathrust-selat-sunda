@@ -1,0 +1,439 @@
+<script>
+(function(){
+"use strict";
+const D=window.__POV, L=window.__POVLIB;
+const {buildGM,sampleGM,AU,mulberry32,clamp,nf,romOf,hhmmss,$}=L;
+const T=window.THREE;
+if(!T){ $('#load').innerHTML='<div><span>Gagal memuat pustaka 3D. Periksa koneksi lalu muat ulang.</span></div>'; return; }
+
+/* ---------- watak tiap lokasi ---------- */
+const LOOK={
+  jakut:        {jenis:'kota',   rumah:260, tinggi:[3,7,14,34], palem:28, perahu:4,  pasir:0.18, hutan:0},
+  labuan:       {jenis:'pesisir',rumah:150, tinggi:[3,4,7,11],  palem:95, perahu:16, pasir:0.85, hutan:0.3},
+  anyer:        {jenis:'pesisir',rumah:110, tinggi:[3,4,8,13],  palem:110,perahu:10, pasir:0.9,  hutan:0.35},
+  merak:        {jenis:'kota',   rumah:190, tinggi:[3,6,11,22], palem:40, perahu:12, pasir:0.35, hutan:0.15},
+  pelabuhanratu:{jenis:'teluk',  rumah:120, tinggi:[3,5,9,16],  palem:80, perahu:20, pasir:0.7,  hutan:0.6},
+  bakauheni:    {jenis:'pesisir',rumah:90,  tinggi:[3,4,7,12],  palem:85, perahu:14, pasir:0.8,  hutan:0.45},
+  seribu:       {jenis:'pulau',  rumah:55,  tinggi:[3,4,6,8],   palem:130,perahu:18, pasir:1.0,  hutan:0.5},
+  cilegon:      {jenis:'kota',   rumah:210, tinggi:[4,8,15,28], palem:30, perahu:6,  pasir:0.3,  hutan:0.1}
+};
+
+/* ---------- penyiapan penyaji ---------- */
+const cv=$('#stage');
+const renderer=new T.WebGLRenderer({canvas:cv,antialias:window.devicePixelRatio<2,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.6));
+renderer.setSize(innerWidth,innerHeight,false);
+renderer.toneMapping=T.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.0;
+const scene=new T.Scene();
+const camera=new T.PerspectiveCamera(62,innerWidth/innerHeight,0.15,2600);
+const SKY_TOP=new T.Color(0x2f5f88), SKY_BOT=new T.Color(0xb4c8d2);
+scene.fog=new T.Fog(0x9fb8c4,320,2100);
+scene.background=new T.Color(0x9fb8c4);
+
+/* langit: bola terbalik dengan gradasi */
+{
+  const g=new T.SphereGeometry(2100,24,14);
+  const m=new T.ShaderMaterial({side:T.BackSide,depthWrite:false,uniforms:{
+      a:{value:SKY_TOP}, b:{value:SKY_BOT}, h:{value:0.0}},
+    vertexShader:'varying float vy; void main(){ vy=normalize(position).y; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+    fragmentShader:'uniform vec3 a; uniform vec3 b; varying float vy;'+
+      'void main(){ float t=clamp(vy*1.25+0.35,0.0,1.0); gl_FragColor=vec4(mix(b,a,t),1.0); }'});
+  scene.add(new T.Mesh(g,m));
+}
+scene.add(new T.HemisphereLight(0xcfe2ec,0x4a5535,0.85));
+const sun=new T.DirectionalLight(0xfff2e0,1.15); sun.position.set(-160,180,90); scene.add(sun);
+
+/* ---------- tanah: pantai melandai lalu datar ---------- */
+const SHORE=-40;                 // garis pantai pada sumbu Z
+const CAM_Z=150;                 // kamera berdiri ~190 m dari bibir pantai, menghadap laut
+let groundMesh=null, groundElev=2;
+function groundYAt(z,elev){
+  if(z<SHORE-150) return -7.5;
+  if(z<SHORE) { const t=(z-(SHORE-150))/150; return -7.5+(7.5)*t*t; }
+  const t=clamp((z-SHORE)/70,0,1);
+  return elev*t*t*(3-2*t);       // smoothstep naik ke ketinggian tempat
+}
+function buildGround(elev,look,rnd){
+  if(groundMesh){ scene.remove(groundMesh); groundMesh.geometry.dispose(); groundMesh.material.dispose(); }
+  const S=1500, N=110;
+  const g=new T.PlaneGeometry(S,S,N,N); g.rotateX(-Math.PI/2);
+  const pos=g.attributes.position, col=[];
+  const cSand=new T.Color(0xd9c9a4), cSoil=new T.Color(0x7e8c5a),
+        cRoad=new T.Color(0x4a5157), cDeep=new T.Color(0x55603f);
+  for(let i=0;i<pos.count;i++){
+    const x=pos.getX(i), z=pos.getZ(i);
+    let y=groundYAt(z,elev);
+    y+= (Math.sin(x*0.035)*Math.cos(z*0.028))*0.35*(z>SHORE?1:0.2);
+    pos.setY(i,y);
+    const c=new T.Color();
+    if(z<SHORE+10) c.copy(cSand);
+    else if(Math.abs(x)<9) c.copy(cRoad);                 // jalan utama menuju pantai
+    else if(Math.abs((Math.abs(x)-9)%90)<6) c.copy(cRoad); // jalan lingkungan
+    else c.copy(cSoil).lerp(cSand,look.pasir*0.5);
+    c.lerp(cDeep,clamp((y-elev)*0.05,0,0.3));
+    const j=0.93+rnd()*0.14; col.push(c.r*j,c.g*j,c.b*j);
+  }
+  g.setAttribute('color',new T.Float32BufferAttribute(col,3));
+  g.computeVertexNormals();
+  groundMesh=new T.Mesh(g,new T.MeshLambertMaterial({vertexColors:true}));
+  scene.add(groundMesh); groundElev=elev;
+}
+
+/* ---------- air ---------- */
+const waterUni={uT:{value:0},uSea:{value:0},uLand:{value:0},uBoreZ:{value:-1200},
+                uAmp:{value:1},uTurb:{value:0}};
+let water=null;
+{
+  const g=new T.PlaneGeometry(3000,3000,170,170); g.rotateX(-Math.PI/2);
+  const mat=new T.ShaderMaterial({transparent:true,uniforms:waterUni,
+    vertexShader:`
+      uniform float uT,uSea,uLand,uBoreZ,uAmp;
+      varying vec3 vP; varying float vFront; varying float vH;
+      void main(){
+        vec3 p=position;
+        float s=1.0/(1.0+exp((p.z-uBoreZ)*0.09));     // 1 di sisi laut
+        float base=mix(uLand,uSea,s);
+        float w=sin(p.x*0.075+uT*1.25)*0.16
+               +sin(p.z*0.058-uT*1.0)*0.20
+               +sin((p.x+p.z)*0.028+uT*0.62)*0.26
+               +sin((p.x-p.z)*0.013-uT*0.4)*0.34;
+        float d=abs(p.z-uBoreZ);
+        vFront=exp(-d*d/2600.0);
+        p.y=base+w*uAmp+vFront*1.2*max(uSea-uLand,0.0)*0.25;
+        vH=p.y; vP=p;
+        gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);
+      }`,
+    fragmentShader:`
+      uniform float uTurb; varying vec3 vP; varying float vFront; varying float vH;
+      void main(){
+        vec3 deep=vec3(0.07,0.22,0.30);
+        vec3 shal=vec3(0.20,0.46,0.48);
+        vec3 mud =vec3(0.26,0.21,0.13);
+        float f=clamp(vFront*1.4,0.0,1.0);
+        vec3 c=mix(deep,shal,clamp((vP.z+400.0)/900.0,0.0,1.0));
+        c=mix(c,mud,clamp(uTurb,0.0,1.0)*0.75);
+        c=mix(c,vec3(0.85,0.88,0.88),f*0.8);
+        float a=clamp(0.80+f*0.2,0.0,1.0);
+        gl_FragColor=vec4(c,a);
+      }`});
+  water=new T.Mesh(g,mat); water.renderOrder=2; scene.add(water);
+}
+
+/* ---------- pembangun kota ---------- */
+let props=[];
+function clearProps(){ for(const p of props){ scene.remove(p); if(p.geometry)p.geometry.dispose(); } props=[]; }
+function addInstanced(geo,mat,items){
+  if(!items.length) return null;
+  const m=new T.InstancedMesh(geo,mat,items.length);
+  const o=new T.Object3D();
+  items.forEach((it,i)=>{ o.position.set(it.x,it.y,it.z);
+    o.rotation.set(it.rx||0,it.ry||0,it.rz||0);
+    o.scale.set(it.sx||1,it.sy||1,it.sz||1); o.updateMatrix(); m.setMatrixAt(i,o.matrix);
+    if(it.c) m.setColorAt(i,it.c); });
+  m.instanceMatrix.needsUpdate=true; if(m.instanceColor) m.instanceColor.needsUpdate=true;
+  scene.add(m); props.push(m); return m;
+}
+function buildTown(key,elev){
+  clearProps();
+  const look=LOOK[key]||LOOK.labuan;
+  const rnd=mulberry32(key.length*7919+Math.round(elev*13)+11);
+  buildGround(elev,look,rnd);
+
+  // --- bangunan ---
+  const walls=[],roofs=[];
+  const tin=[0xa8483a,0x8c6a4a,0x6f7d7a,0x9aa0a3,0x7a5a46];
+  const wall=[0xd8d3c6,0xc9c2b2,0xe2ddd0,0xb9b3a4,0xcfd4d2];
+  for(let i=0;i<look.rumah;i++){
+    const far=rnd();
+    const z=SHORE+12+rnd()*470;
+    const side=rnd()<0.5?-1:1;
+    const x=side*(12+Math.pow(rnd(),0.8)*270);
+    const tier=far<0.55?0:far<0.82?1:far<0.95?2:3;
+    const h=look.tinggi[tier]*(0.8+rnd()*0.5);
+    const w=4+rnd()*7, dp=4+rnd()*8;
+    const gy=groundYAt(z,elev);
+    walls.push({x,y:gy+h/2,z,sx:w,sy:h,sz:dp,ry:(rnd()-0.5)*0.35,
+      c:new T.Color(wall[(rnd()*wall.length)|0]).multiplyScalar(0.85+rnd()*0.3)});
+    if(h<12) roofs.push({x,y:gy+h+1.1,z,sx:w*0.82,sy:2.2,sz:dp*0.82,ry:Math.PI/4,
+      c:new T.Color(tin[(rnd()*tin.length)|0])});
+  }
+  addInstanced(new T.BoxGeometry(1,1,1),
+    new T.MeshLambertMaterial({vertexColors:false}),walls);
+  addInstanced(new T.ConeGeometry(0.78,1,4),
+    new T.MeshLambertMaterial({}),roofs);
+
+  // --- masjid (penanda kampung Indonesia) ---
+  {
+    const z=SHORE+95, x=-46, gy=groundYAt(z,elev);
+    const body=new T.Mesh(new T.BoxGeometry(16,7,14),new T.MeshLambertMaterial({color:0xe8e4d8}));
+    body.position.set(x,gy+3.5,z); scene.add(body); props.push(body);
+    const dome=new T.Mesh(new T.SphereGeometry(5,16,10,0,Math.PI*2,0,Math.PI*0.55),
+      new T.MeshLambertMaterial({color:0x2f6f63}));
+    dome.position.set(x,gy+7,z); scene.add(dome); props.push(dome);
+    const min=new T.Mesh(new T.CylinderGeometry(1.1,1.3,17,10),new T.MeshLambertMaterial({color:0xe8e4d8}));
+    min.position.set(x+11,gy+8.5,z); scene.add(min); props.push(min);
+    const cap=new T.Mesh(new T.ConeGeometry(1.7,3,10),new T.MeshLambertMaterial({color:0x2f6f63}));
+    cap.position.set(x+11,gy+18.5,z); scene.add(cap); props.push(cap);
+  }
+
+  // --- pohon kelapa ---
+  const tr=[],fr=[];
+  for(let i=0;i<look.palem;i++){
+    const z=SHORE-14+rnd()*440;
+    const x=(rnd()-0.5)*620;
+    const gy=groundYAt(z,elev), h=7+rnd()*7;
+    tr.push({x,y:gy+h/2,z,sx:1,sy:h,sz:1,rz:(rnd()-0.5)*0.22});
+    for(let f=0;f<5;f++) fr.push({x,y:gy+h,z,ry:f*1.256+rnd(),rz:0.95+rnd()*0.3,
+      sx:1,sy:1,sz:1});
+  }
+  addInstanced(new T.CylinderGeometry(0.22,0.42,1,6),
+    new T.MeshLambertMaterial({color:0x6b5a41}),tr);
+  addInstanced(new T.ConeGeometry(0.85,4.6,4,1,true),
+    new T.MeshLambertMaterial({color:0x3f6b34,side:T.DoubleSide}),fr);
+
+  // --- tiang listrik & kabel ---
+  const poles=[];
+  for(let i=0;i<20;i++){ const z=SHORE+20+i*24, x=(i%2?1:-1)*10.5, gy=groundYAt(z,elev);
+    poles.push({x,y:gy+4.5,z,sx:1,sy:9,sz:1}); }
+  addInstanced(new T.CylinderGeometry(0.16,0.2,1,5),
+    new T.MeshLambertMaterial({color:0x8b8478}),poles);
+
+  // --- perahu ---
+  const boats=[];
+  for(let i=0;i<look.perahu;i++){
+    const z=SHORE-25-rnd()*150, x=(rnd()-0.5)*420;
+    boats.push({x,y:-0.4,z,sx:1.4+rnd()*0.9,sy:1,sz:4+rnd()*4,ry:rnd()*3.14,
+      c:new T.Color().setHSL(rnd(),0.55,0.55)});
+  }
+  addInstanced(new T.BoxGeometry(1,1.2,1),new T.MeshLambertMaterial({}),boats);
+
+  // --- orang, untuk membandingkan tinggi ---
+  const ppl=[],heads=[];
+  for(let i=0;i<26;i++){
+    const z=SHORE+20+rnd()*(CAM_Z-40-SHORE), x=(rnd()-0.5)*54;
+    if(Math.abs(z-CAM_Z)<12 && Math.abs(x)<4) continue;     // jangan menempel di kamera
+    const gy=groundYAt(z,elev), c=new T.Color().setHSL(rnd(),0.45,0.42);
+    ppl.push({x,y:gy+0.78,z,sx:1,sy:1,sz:1,ry:rnd()*6.28,c});
+    heads.push({x,y:gy+1.56,z,sx:1,sy:1,sz:1});
+  }
+  addInstanced(new T.CapsuleGeometry(0.2,1.06,4,8),new T.MeshLambertMaterial({}),ppl);
+  addInstanced(new T.SphereGeometry(0.12,8,6),new T.MeshLambertMaterial({color:0x8d6a4f}),heads);
+
+  // --- tiang ukur di depan kamera ---
+  const gy0=groundYAt(CAM_Z-6,elev);
+  const pole=new T.Mesh(new T.CylinderGeometry(0.13,0.13,14,8),
+    new T.MeshLambertMaterial({color:0xf2f2f2}));
+  pole.position.set(2.6,gy0+7,CAM_Z-7); scene.add(pole); props.push(pole);
+  [[1.65,0xff5f4d],[2.5,0xffc800],[5,0xff9100],[8,0xff3020]].forEach(([h,c])=>{
+    const r=new T.Mesh(new T.BoxGeometry(1.05,0.17,0.17),new T.MeshBasicMaterial({color:c}));
+    r.position.set(2.6,gy0+h,CAM_Z-7); scene.add(r); props.push(r);
+  });
+  return look;
+}
+
+/* ---------- keadaan ---------- */
+let S=null, GM=null, tSim=0, playing=false, speed=60, sway=1.8, userElev=2;
+let lastFrame=performance.now(), toastT=0;
+const accHist=new Float32Array(150); let accI=0;
+const tCv=$('#accTrace'), tCtx=tCv.getContext('2d');
+
+function siteByKey(k){ return D.site.find(s=>s.key===k)||D.site[0]; }
+function seaAt(t){                       // mareogram ter-interpolasi (meter)
+  const f=t/D.dtSampel, i=Math.floor(f);
+  if(i<0) return 0;
+  if(i>=S.ts.length-1) return S.ts[S.ts.length-1]/100;
+  const w=f-i;
+  return (S.ts[i]*(1-w)+S.ts[i+1]*w)/100;
+}
+function loadSite(key){
+  S=siteByKey(key);
+  S.seed=1337+key.length*31;
+  GM=buildGM(S);
+  userElev=clamp(Math.max(S.elev,0),0,30);
+  $('#elevS').value=userElev; $('#elevV').textContent=nf(userElev)+' m';
+  buildTown(key,userElev);
+  $('#locName').textContent=S.nama;
+  $('#locDesc').textContent=S.tempat;
+  $('#roMmi').innerHTML=romOf(S.mmi)+' <small>('+nf(S.mmi,1)+')</small>';
+  tSim=0; waterUni.uBoreZ.value=-1400;
+  fillIntroFigs();
+  render();
+}
+function fillIntroFigs(){
+  const tS=S.rrup/3.6;
+  $('#introFigs').innerHTML=
+   '<div><span class="v">'+romOf(S.mmi)+'</span><span class="k">Intensitas MMI</span></div>'+
+   '<div><span class="v">'+nf(S.durasi)+' <small style="font-size:.6em">dtk</small></span><span class="k">Lama guncangan</span></div>'+
+   '<div><span class="v">'+nf(S.puncak,1)+' <small style="font-size:.6em">m</small></span><span class="k">Gelombang tertinggi</span></div>'+
+   '<div><span class="v">'+nf(S.tTiba/60)+' <small style="font-size:.6em">mnt</small></span><span class="k">Air datang</span></div>';
+}
+function toast(a,b){
+  const el=$('#toast'); el.querySelector('b').textContent=a;
+  el.querySelector('span').textContent=b||'';
+  el.style.opacity='1'; toastT=performance.now()+3600;
+}
+
+/* ---------- gelang waktu ---------- */
+const TOTAL=8*3600;
+function phaseOf(t){
+  const tS=S.rrup/3.6;
+  if(t<tS) return ['menunggu','Gelombang seismik dalam perjalanan'];
+  if(t<tS+S.durasi) return ['guncangan','MMI '+romOf(S.mmi)+' berlangsung'];
+  if(S.tTiba>0 && t<S.tTiba-180) return ['sesudah guncangan','Sirene peringatan dini'];
+  if(S.tTiba>0 && t<S.tTiba) return ['air surut','Laut menarik diri'];
+  if(t<S.tPuncak+600) return ['air datang','Gelombang tsunami'];
+  return ['tergenang','Air belum surut'];
+}
+
+/* ---------- gambar bingkai ---------- */
+function render(){
+  const tS=S.rrup/3.6;
+  const tShake=tSim-tS;
+  const inShake = tShake>=0 && tShake<GM.total;
+  const sx=inShake?sampleGM(GM.x,tShake):{a:0,d:0};
+  const sz=inShake?sampleGM(GM.z,tShake):{a:0,d:0};
+  const sy=inShake?sampleGM(GM.y,tShake):{a:0,d:0};
+  const accG=Math.hypot(sx.a,sz.a)/9.80665;
+  const dispCm=Math.hypot(sx.d,sz.d)*100;
+
+  // kamera POV setinggi mata
+  const gy=groundYAt(CAM_Z,userElev);
+  camera.position.set(sx.d*sway, gy+1.65+sy.d*sway*0.7, CAM_Z+sz.d*sway);
+  camera.rotation.order='YXZ';
+  camera.rotation.set(
+    -0.055 + clamp(-sz.a/9.80665,-0.3,0.3)*0.5*sway*0.6,
+    clamp(sx.a/9.80665,-0.3,0.3)*0.10*sway,
+    clamp(-sx.a/9.80665,-0.3,0.3)*0.40*sway*0.6);
+
+  // air
+  const sea=seaAt(tSim);
+  const bore=(S.tTiba>0)?clamp((tSim-(S.tTiba-70))/140,0,1):0;
+  waterUni.uT.value=tSim*0.35;
+  waterUni.uSea.value=sea;
+  waterUni.uLand.value=Math.min(sea,seaAt(Math.max(0,tSim-150)));
+  waterUni.uBoreZ.value=-1300+bore*2100;
+  waterUni.uAmp.value=clamp(0.6+Math.abs(sea)*0.25,0.4,3.2);
+  waterUni.uTurb.value=clamp((sea-0.4)*0.5,0,1);
+
+  const groundHere=userElev;
+  const depth=Math.max(0,sea-groundHere);
+
+  // suara
+  const near=(S.tTiba>0)?clamp(1-(Math.abs(tSim-S.tTiba)/420),0,1):0;
+  const roar=clamp(Math.max(near*clamp(S.puncak/6,0.25,1.6), depth>0.05?0.35+depth*0.06:0),0,1.3);
+  const siren=(tSim>tS+S.durasi && S.tTiba>0 && tSim<S.tTiba+900)?1:0;
+  AU.update({accG,depth,roar,siren,tSim,playing},0);
+
+  // HUD
+  $('#clock').textContent='T + '+hhmmss(tSim);
+  const ph=phaseOf(tSim);
+  $('#phase').textContent=ph[0];
+  $('#roAcc').innerHTML=nf(accG,3)+' <small>g</small>';
+  $('#roDisp').innerHTML=nf(dispCm,0)+' <small>cm</small>';
+  $('#roSea').innerHTML=(sea>=0?'+':'')+nf(sea,2)+' <small>m</small>';
+  $('#roDepth').innerHTML= depth>0.02
+    ? '<span style="color:'+(depth>1.5?'var(--crit)':'var(--warn)')+'">'+nf(depth,2)+' <small>m</small></span>'
+    : '<span style="color:var(--ok)">kering</span>';
+  const dtArr=S.tTiba-tSim;
+  $('#roEta').innerHTML = S.tTiba<0 ? '–'
+    : dtArr>0 ? nf(dtArr/60)+' <small>mnt lagi</small>'
+    : '<span style="color:var(--crit)">sudah datang</span>';
+  const under=depth-1.55;                       // air di atas tinggi mata?
+  if(under>0){
+    scene.fog.color.setHex(0x24606b); scene.background.setHex(0x24606b);
+    scene.fog.near=2; scene.fog.far=clamp(48-under*2.6,14,48);
+  } else {
+    scene.fog.color.setHex(0x9fb8c4); scene.background.setHex(0x9fb8c4);
+    scene.fog.near=320; scene.fog.far=2100;
+  }
+  $('#veil').style.opacity = clamp(Math.max(accG*1.6, under>0?0.4:0),0,0.75)+'';
+  if(under>0 && !seenUnder){ seenUnder=true;
+    toast('Kamu tenggelam', nf(under,1)+' m air di atas kepala · naikkan ketinggian tempatmu'); }
+  if(under<=0) seenUnder=false;
+
+  // jejak akselerogram
+  accHist[accI=(accI+1)%accHist.length]=accG;
+  tCtx.clearRect(0,0,tCv.width,tCv.height);
+  tCtx.strokeStyle='rgba(120,180,200,.25)'; tCtx.lineWidth=1;
+  tCtx.beginPath(); tCtx.moveTo(0,tCv.height/2); tCtx.lineTo(tCv.width,tCv.height/2); tCtx.stroke();
+  tCtx.strokeStyle=accG>0.15?'#ff5f4d':(accG>0.05?'#f0a232':'#2ec4d6'); tCtx.lineWidth=2;
+  tCtx.beginPath();
+  for(let i=0;i<accHist.length;i++){
+    const v=accHist[(accI+1+i)%accHist.length];
+    const x=i/(accHist.length-1)*tCv.width;
+    const y=tCv.height/2-clamp(v/0.45,0,1)*(tCv.height/2-3)*(i%2?1:-1);
+    i?tCtx.lineTo(x,y):tCtx.moveTo(x,y);
+  }
+  tCtx.stroke();
+
+  $('#scrub').value=Math.round(tSim/TOTAL*1000);
+  renderer.render(scene,camera);
+}
+
+/* ---------- gelung utama ---------- */
+let seenShake=false,seenQuiet=false,seenDraw=false,seenWave=false,seenUnder=false;
+function loop(){
+  requestAnimationFrame(loop);
+  const now=performance.now(), dtR=Math.min(0.1,(now-lastFrame)/1000); lastFrame=now;
+  if(playing){
+    const tS=S.rrup/3.6;
+    let sp=speed;
+    if(tSim>tS-12 && tSim<tS+S.durasi+14) sp=1;                       // guncangan: waktu nyata
+    else if(S.tTiba>0 && tSim>S.tTiba-200 && tSim<S.tPuncak+420) sp=Math.min(sp,4);
+    tSim+=dtR*sp;
+    if(tSim>TOTAL){ tSim=TOTAL; playing=false; $('#pause').textContent='Ulangi'; }
+    // penanda kejadian
+    if(!seenShake && tSim>=tS){ seenShake=true;
+      toast('Guncangan dimulai','MMI '+romOf(S.mmi)+' · '+nf(S.durasi)+' detik'); }
+    if(!seenQuiet && tSim>=tS+S.durasi){ seenQuiet=true;
+      toast('Guncangan berhenti', S.tTiba>0?('Air datang '+nf((S.tTiba-tSim)/60)+' menit lagi'):'Tidak ada tsunami berarti'); }
+    if(!seenDraw && S.tTiba>0 && seaAt(tSim)<-0.5){ seenDraw=true;
+      toast('Laut surut','Tanda tsunami — segera ke tempat tinggi'); }
+    if(!seenWave && S.tTiba>0 && tSim>=S.tTiba){ seenWave=true;
+      toast('Air datang', nf(S.puncak,1)+' m · puncak menit ke-'+nf(S.tPuncak/60)); }
+  }
+  if(toastT && now>toastT){ $('#toast').style.opacity='0'; toastT=0; }
+  render();
+}
+
+/* ---------- kendali ---------- */
+function setPlay(v){
+  playing=v;
+  $('#pause').disabled=!v&&tSim<=0;
+  $('#pause').textContent=v?'Jeda':(tSim>=TOTAL?'Ulangi':'Lanjut');
+  $('#start').textContent=tSim>0?'Ulang dari awal':'Mulai';
+  if(v) AU.resume();
+}
+function reset(){ tSim=0; seenShake=seenQuiet=seenDraw=seenWave=seenUnder=false;
+  $('#toast').style.opacity='0'; }
+$('#go').addEventListener('click',()=>{ $('#intro').remove(); AU.resume(); setPlay(true); });
+$('#start').addEventListener('click',()=>{ reset(); setPlay(true); });
+$('#pause').addEventListener('click',()=>{ if(tSim>=TOTAL) reset(); setPlay(!playing); });
+$('#toWave').addEventListener('click',()=>{
+  if(S.tTiba<=0) return;
+  tSim=Math.max(0,S.tTiba-120); seenShake=seenQuiet=seenDraw=true; seenWave=false;
+  setPlay(true); });
+$('#sound').addEventListener('click',e=>{ const on=AU.toggle();
+  e.target.textContent='Suara: '+(on?'nyala':'mati'); e.target.setAttribute('aria-pressed',on); });
+$('#scrub').addEventListener('input',e=>{ tSim=(+e.target.value)/1000*TOTAL;
+  seenShake=seenQuiet=seenDraw=seenWave=true; render(); });
+$('#speed').addEventListener('change',e=>{ speed=+e.target.value; });
+$('#elevS').addEventListener('input',e=>{ userElev=+e.target.value;
+  $('#elevV').textContent=nf(userElev)+' m'; buildTown(S.key,userElev); render(); });
+$('#swayS').addEventListener('input',e=>{ sway=(+e.target.value)/10;
+  $('#swayV').textContent=nf(sway,1)+'×'; });
+$('#site').addEventListener('change',e=>{ reset(); loadSite(e.target.value); setPlay(playing); });
+addEventListener('resize',()=>{ renderer.setSize(innerWidth,innerHeight,false);
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); render(); },{passive:true});
+
+/* ---------- mulai ---------- */
+$('#site').innerHTML=D.site.map(s=>'<option value="'+s.key+'">'+s.nama+'</option>').join('');
+$('#toWave').disabled=false;
+$('#swayV').textContent='1,8×';
+loadSite('labuan');
+$('#site').value='labuan';
+$('#load').remove();
+loop();
+})();
+</script>

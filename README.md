@@ -5,6 +5,7 @@ pecah sepanjang 1.454 km sekaligus: rupture, deformasi dasar laut, perambatan ts
 guncangan tanah, likuefaksi, dan paparan penduduk di 105 juta jiwa — dengan fokus pada Jabodetabek.
 
 **Halaman langsung: https://satuarah-ai.github.io/megathrust-selat-sunda/**
+**Simulasi 3D orang pertama: https://satuarah-ai.github.io/megathrust-selat-sunda/pov.html**
 
 > **Ini skenario, bukan prakiraan.** Tidak ada gempa Mw 9,5 yang sedang berlangsung.
 > BMKG dan Pusgen menaksir magnitudo maksimum segmen Selat Sunda di angka **8,7**;
@@ -30,6 +31,9 @@ di atas data pengukuran nyata:
 | Likuefaksi | Zhu dkk. (2017), model pesisir |
 | Penduduk | GHSL GHS-POP 2025 resolusi 100 m × batas GADM 4.1 (116 kabupaten/kota) |
 | Korban | PAGER — Jaiswal & Wald (2010), koefisien Indonesia |
+| Guncangan 3D | deret sinus berfase acak, spektrum Kanai–Tajimi, selubung Jennings–Housner, diskalakan ke PGA & PGV titik itu |
+| Air naik 3D | mareogram solver di titik yang sama, 686 sampel per lokasi (tiap 42 detik, 8 jam) |
+| Suara | disintesis Web Audio — gemuruh mengikuti percepatan tanah, sirene, deru tsunami |
 
 ## Validasi
 
@@ -73,7 +77,8 @@ Angka di sini untuk menimbang kebijakan mitigasi, bukan untuk dikutip sebagai ra
 ## Isi repositori
 
 ```
-index.html        halaman simulasi (mandiri, ~174 KB)
+index.html        halaman peta & angka (~177 KB)
+pov.html          simulasi 3D sudut pandang orang pertama (~64 KB, Three.js dari CDN)
 data/*.gz         grid terkompresi: batimetri, tinggi gelombang, waktu tiba,
                   deformasi, topografi Jakarta 183 m, MMI, Vs30  (total 869 KB)
 data/*.bin        cadangan tanpa gzip untuk peramban lama
@@ -90,7 +95,8 @@ peta menyusul. Di ponsel, simulasi otomatis memakai grid separuh (8× lebih ring
 ```bash
 node src/pre.js        # hitung medan deformasi & guncangan
 node src/impact.js     # dampak per kabupaten/kota
-node src/build2.js     # rakit index.html + data
+node src/run_pov.js    # mareogram & parameter guncangan 8 lokasi POV
+node src/build2.js     # rakit index.html + data + pov.html
 node src/validate.js   # jalankan uji validasi
 ```
 

@@ -1,0 +1,122 @@
+<title>Rasakan Sendiri — Megathrust Selat Sunda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,300;6..72,400&display=swap">
+<style>
+:root{
+  --bg:#060f17; --surf:#0d1a24; --surf2:#132531; --surf3:#1c3242;
+  --ink:#e7eff4; --ink2:#9cb1be; --ink3:#68808f; --line:#1c303d; --line2:#2b4757;
+  --accent:#2ec4d6; --accent2:#63dbe9; --onaccent:#03222a;
+  --mmi7:#ffff00; --mmi8:#ffc800; --mmi9:#ff9100; --mmi10:#ff3020;
+  --warn:#f0a232; --crit:#ff5f4d; --ok:#34d399;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);overflow:hidden;
+  font-family:Archivo,system-ui,-apple-system,Segoe UI,sans-serif;font-size:15px;
+  -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+.mono{font-family:IBM Plex Mono,ui-monospace,monospace;font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
+
+/* ---- panggung 3D ---- */
+#stage{position:fixed;inset:0;display:block;touch-action:none}
+#veil{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .5s;
+  background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.55) 100%)}
+
+/* ---- HUD ---- */
+.hud{position:fixed;inset:0;pointer-events:none;display:grid;
+  grid-template-rows:auto 1fr auto;padding:10px;gap:10px}
+.hud > *{pointer-events:auto}
+.bar{display:flex;gap:8px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.card{background:rgba(6,16,24,.82);border:1px solid rgba(120,180,200,.24);border-radius:9px;
+  backdrop-filter:blur(8px);padding:8px 11px}
+.title{display:grid;gap:2px;min-width:0}
+.title b{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.title span{font-family:IBM Plex Mono,monospace;font-size:10.5px;color:#8fb3c2;letter-spacing:.05em}
+.clock{font-family:IBM Plex Mono,monospace;font-size:17px;font-weight:600;letter-spacing:.02em;
+  color:var(--accent2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.phase{font-family:IBM Plex Mono,monospace;font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:#8fb3c2;margin-top:1px}
+
+.mid{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none}
+.mid > *{pointer-events:auto}
+.readout{display:grid;gap:7px;min-width:118px}
+.ro{display:grid;gap:1px}
+.ro .k{font-family:IBM Plex Mono,monospace;font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:#7f9dab;line-height:1.3}
+.ro .v{font-family:IBM Plex Mono,monospace;font-size:16px;font-weight:600;line-height:1.15;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.ro .v small{font-size:.58em;font-weight:500;color:#8fb3c2;letter-spacing:0}
+#accTrace{display:block;width:118px;height:34px;border-radius:4px;background:rgba(10,26,38,.7)}
+
+/* ---- kontrol bawah ---- */
+.ctl{display:grid;gap:8px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{appearance:none;border:1px solid rgba(120,180,200,.3);background:rgba(10,26,38,.86);
+  color:var(--ink);font:600 13px/1 Archivo,sans-serif;padding:10px 14px;border-radius:8px;
+  cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:42px;white-space:nowrap;
+  backdrop-filter:blur(8px)}
+.btn:hover{border-color:var(--accent);color:var(--accent2)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.pri{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+.btn.pri:hover{background:var(--accent2);color:var(--onaccent)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.scrub{flex:1 1 160px;min-width:110px;accent-color:var(--accent);height:26px}
+select{appearance:none;border:1px solid rgba(120,180,200,.3);background:rgba(10,26,38,.86);
+  color:var(--ink);font:500 13px/1 Archivo,sans-serif;padding:10px 30px 10px 12px;border-radius:8px;
+  min-height:42px;cursor:pointer;backdrop-filter:blur(8px)}
+.selwrap{position:relative;display:inline-flex}
+.selwrap::after{content:"";position:absolute;right:12px;top:50%;width:6px;height:6px;pointer-events:none;
+  border-right:1.6px solid #8fb3c2;border-bottom:1.6px solid #8fb3c2;transform:translateY(-70%) rotate(45deg)}
+.sl{display:grid;gap:3px;min-width:130px;flex:1 1 130px}
+.sl label{font-family:IBM Plex Mono,monospace;font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:#7f9dab;display:flex;justify-content:space-between;gap:8px}
+.sl label b{color:var(--accent2);font-weight:600}
+.sl input{width:100%;accent-color:var(--accent);height:22px;margin:0}
+
+/* ---- panel pembuka ---- */
+#intro{position:fixed;inset:0;z-index:20;background:rgba(4,11,17,.94);backdrop-filter:blur(10px);
+  display:grid;place-items:center;padding:20px;overflow-y:auto}
+.ibox{max-width:560px;display:grid;gap:16px}
+.ibox h1{font-size:clamp(26px,6vw,40px);line-height:1.05;letter-spacing:-.03em;font-weight:700}
+.ibox p{margin:0;font-family:Newsreader,Georgia,serif;font-size:16.5px;line-height:1.55;color:var(--ink2)}
+.ibox p strong{color:var(--ink);font-weight:500}
+.eyebrow{font-family:IBM Plex Mono,monospace;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink3)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.grid2 div{background:var(--surf);padding:10px 12px;display:grid;gap:2px}
+.grid2 .v{font-family:IBM Plex Mono,monospace;font-size:19px;font-weight:600;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums}
+.grid2 .k{font-family:IBM Plex Mono,monospace;font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink3)}
+.note{font-size:12.5px;color:var(--ink3);line-height:1.5}
+.note a{color:var(--accent)}
+
+/* ---- pesan kejadian ---- */
+#toast{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:15;
+  pointer-events:none;text-align:center;opacity:0;transition:opacity .35s}
+#toast b{display:block;font-size:clamp(21px,5.5vw,34px);font-weight:700;letter-spacing:-.02em;
+  text-shadow:0 2px 20px rgba(0,0,0,.9)}
+#toast span{display:block;font-family:IBM Plex Mono,monospace;font-size:12px;color:#cfe6ef;
+  letter-spacing:.08em;margin-top:5px;text-shadow:0 2px 12px rgba(0,0,0,.9)}
+
+#load{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:#060f17}
+#load div{display:grid;gap:9px;justify-items:center}
+#load span{font-family:IBM Plex Mono,monospace;font-size:11.5px;color:#8fb3c2;letter-spacing:.06em}
+.spin{width:26px;height:26px;border:2px solid rgba(120,180,200,.25);border-top-color:var(--accent);
+  border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media(max-width:620px){
+  .hud{padding:8px;gap:8px}
+  .card{padding:7px 9px}
+  .readout{min-width:96px}
+  .ro .v{font-size:14px}
+  #accTrace{width:96px;height:28px}
+  .clock{font-size:15px}
+  .btn{padding:9px 12px;font-size:12.5px}
+  .sl{min-width:110px}
+}
+@media(prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>

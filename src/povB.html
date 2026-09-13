@@ -1,0 +1,90 @@
+<canvas id="stage"></canvas>
+<div id="veil"></div>
+
+<div id="toast"><b></b><span></span></div>
+
+<div class="hud">
+  <div class="bar">
+    <div class="card title">
+      <b id="locName">Jakarta Utara</b>
+      <span id="locDesc">memuat…</span>
+    </div>
+    <div class="card" style="text-align:right">
+      <div class="clock" id="clock">T + 00:00:00</div>
+      <div class="phase" id="phase">menunggu</div>
+    </div>
+  </div>
+
+  <div class="mid">
+    <div class="card readout">
+      <div class="ro"><span class="k">Guncangan MMI</span><span class="v" id="roMmi">–</span></div>
+      <div class="ro"><span class="k">Percepatan kini</span><span class="v" id="roAcc">0,000 <small>g</small></span></div>
+      <div class="ro"><span class="k">Geser tanah</span><span class="v" id="roDisp">0 <small>cm</small></span></div>
+      <canvas id="accTrace" width="236" height="68"></canvas>
+    </div>
+    <div class="card readout" style="text-align:right">
+      <div class="ro"><span class="k">Muka air laut</span><span class="v" id="roSea">0,0 <small>m</small></span></div>
+      <div class="ro"><span class="k">Air di kakimu</span><span class="v" id="roDepth">kering</span></div>
+      <div class="ro"><span class="k">Air datang</span><span class="v" id="roEta">–</span></div>
+    </div>
+  </div>
+
+  <div class="ctl">
+    <div class="row">
+      <div class="sl">
+        <label>Ketinggian tempatmu <b id="elevV">2 m</b></label>
+        <input type="range" id="elevS" min="0" max="30" step="1" value="2" aria-label="Ketinggian tanah tempatmu berdiri">
+      </div>
+      <div class="sl">
+        <label>Goyangan terasa <b id="swayV">1,0×</b></label>
+        <input type="range" id="swayS" min="10" max="40" step="1" value="18" aria-label="Penguat goyangan yang terasa">
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn pri" id="start">Mulai</button>
+      <button class="btn" id="pause" disabled>Jeda</button>
+      <button class="btn" id="toWave" disabled>Lompat ke air datang</button>
+      <button class="btn" id="sound" aria-pressed="true">Suara: nyala</button>
+      <input type="range" class="scrub" id="scrub" min="0" max="1000" value="0" disabled aria-label="Geser waktu">
+      <div class="selwrap">
+        <select id="site" aria-label="Pilih lokasi"></select>
+      </div>
+      <div class="selwrap">
+        <select id="speed" aria-label="Kecepatan waktu">
+          <option value="1">1× waktu nyata</option>
+          <option value="10">10×</option>
+          <option value="60" selected>60×</option>
+          <option value="300">300×</option>
+        </select>
+      </div>
+      <a class="btn" href="index.html">← Peta &amp; angka</a>
+    </div>
+  </div>
+</div>
+
+<div id="intro">
+  <div class="ibox">
+    <p class="eyebrow">Sudut pandang orang pertama · Mw 9,5 Selat Sunda</p>
+    <h1>Berdiri di sana saat itu terjadi</h1>
+    <p>Ini bukan animasi karangan. Guncangan yang akan kamu rasakan dibangkitkan dari
+      <strong>percepatan tanah hasil perhitungan</strong> di titik itu, berlangsung selama
+      <strong>durasi sungguhan</strong> yang dihitung model. Air naik mengikuti
+      <strong>mareogram dari solver tsunami</strong> — tinggi dan waktunya apa adanya.</p>
+    <div class="grid2" id="introFigs"></div>
+    <p class="note">Suara disintesis dari data yang sama: gemuruh mengikuti percepatan tanah,
+      sirene menyala setelah guncangan reda, deru tsunami menguat seiring gelombang mendekat.
+      Pakai earphone kalau ada — sebagian besar energinya di frekuensi rendah.</p>
+    <p class="note"><strong style="color:var(--warn)">Peringatan:</strong> guncangan layar dan
+      suara frekuensi rendah bisa memicu mual, pusing, atau kecemasan. Kalau kamu punya riwayat
+      epilepsi fotosensitif, vertigo, atau trauma bencana, sebaiknya lewati halaman ini.
+      Tombol jeda selalu tersedia, dan goyangan bisa dikecilkan sampai nol.</p>
+    <div class="row">
+      <button class="btn pri" id="go">Saya paham, mulai</button>
+      <a class="btn" href="index.html">Kembali ke peta</a>
+    </div>
+    <p class="note">Skenario ini bukan prakiraan. BMKG dan Pusgen menaksir magnitudo maksimum
+      segmen Selat Sunda di angka 8,7. Rujukan resmi tetap BMKG dan BNPB.</p>
+  </div>
+</div>
+
+<div id="load"><div><div class="spin"></div><span>menyiapkan panggung…</span></div></div>
