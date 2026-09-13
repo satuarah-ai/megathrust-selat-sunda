@@ -1,0 +1,440 @@
+<script>
+(function(){
+"use strict";
+const D=window.__DATA;
+const g=D.main, NX=g.nx, NY=g.ny, N=NX*NY;
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const PHYS=window.__PHYS;
+
+/* ============ PEMUAT DATA ============
+   Dua jalur, kode pembongkar sama:
+   - inline (Artifact/CSP): base64 tertanam
+   - berkas (web biasa)   : ambil data/<nama>.gz, cadangan data/<nama>.bin
+   Tiap grid disimpan delta per baris lalu digzip — 869 KB, bukan 3,8 MB. */
+const GRIDS=[['main',N,2,NX],['etaMax',N,2,NX],['tArr',N,2,NX],['deform',N,2,NX],
+             ['jkt',D.jkt.w*D.jkt.h,2,D.jkt.w],['mmi',N,1,0],['vs30',N,1,0]];
+function unDelta(a,w){const rows=a.length/w;
+  for(let j=0;j<rows;j++){let p=0;const o=j*w;
+    for(let i=0;i<w;i++){p=(p+a[o+i])|0;a[o+i]=p;}} return a;}
+function b64buf(s){const bin=atob(s),n=bin.length,u=new Uint8Array(n);
+  for(let i=0;i<n;i++)u[i]=bin.charCodeAt(i);return u;}
+async function gunzip(u8){
+  const st=new Blob([u8]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return new Uint8Array(await new Response(st).arrayBuffer());
+}
+function align(u8,bytes,len){
+  const need=len*bytes;
+  const buf=(u8.byteOffset===0&&u8.buffer.byteLength>=need)?u8.buffer
+           :u8.buffer.slice(u8.byteOffset,u8.byteOffset+need);
+  return bytes===2?new Int16Array(buf,0,len):new Uint8Array(buf,0,len);
+}
+const canGz=typeof DecompressionStream!=='undefined';
+async function loadAll(onProg){
+  const B={}; let done=0;
+  await Promise.all(GRIDS.map(async ([name,len,bytes,roww])=>{
+    let raw=null;
+    if(window.__BIN&&window.__BIN[name]) raw=await gunzip(b64buf(window.__BIN[name]));
+    else{
+      if(canGz){ try{
+        const r=await fetch('data/'+name+'.gz');
+        if(r.ok){ const u=new Uint8Array(await r.arrayBuffer());
+          // sebagian server membongkar .gz sendiri; kenali dari sidik jari 1f 8b
+          raw=(u[0]===0x1f&&u[1]===0x8b)? await gunzip(u) : u; }
+      }catch(e){ raw=null; } }
+      if(!raw||raw.length<len*bytes){            // cadangan tanpa kompresi
+        const r2=await fetch('data/'+name+'.bin');
+        if(!r2.ok) throw new Error('gagal memuat '+name);
+        raw=new Uint8Array(await r2.arrayBuffer()); }
+    }
+    const arr=align(raw,bytes,len);
+    if(roww) unDelta(arr,roww);
+    B[name]=arr; onProg(++done,GRIDS.length);
+  }));
+  return B;
+}
+
+/* ============ APLIKASI ============ */
+function start(B){
+const elev=B.main, DEFI=B.deform, MMII=B.mmi, VS30U=B.vs30, jelev=B.jkt;
+let etaMaxI=B.etaMax, tArrI=B.tArr;
+const MW=9.5, SLIP=25.7;
+const F=PHYS.buildFault(D.trench,{dipDeg:13,topDepth:6000,widthKm:200,nSub:44,slipMean:SLIP,hypoFrac:0.445});
+
+/* ---------- angka & format ---------- */
+const nf=(x,d=0)=>Number(x).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});
+const juta=x=>nf(x/1e6,2);
+const ROM=['','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+const romOf=m=>ROM[Math.max(1,Math.min(12,Math.round(m)))]||'X+';
+function hhmmss(s){const h=Math.floor(s/3600),m=Math.floor(s%3600/60),d=Math.floor(s%60);
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(d).padStart(2,'0');}
+
+/* ---------- tangga warna ---------- */
+function lerp(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+function ramp(stops){return function(v){
+  if(v<=stops[0][0])return stops[0][1];
+  for(let i=1;i<stops.length;i++){ if(v<=stops[i][0]){
+    const t=(v-stops[i-1][0])/(stops[i][0]-stops[i-1][0]); return lerp(stops[i-1][1],stops[i][1],t);} }
+  return stops[stops.length-1][1];};}
+const hx=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+const SEA=ramp([[0,hx('#050f1a')],[1000,hx('#0a2136')],[2500,hx('#0d3350')],[4000,hx('#114465')],
+  [5200,hx('#17587e')],[6000,hx('#1f6e94')],[6600,hx('#2f8caa')],[7200,hx('#49a8c0')]]);
+const LAND=ramp([[0,hx('#1b3a33')],[150,hx('#26492f')],[500,hx('#3c5533')],[1100,hx('#5d6440')],
+  [2000,hx('#867d5c')],[3000,hx('#b4ab92')]]);
+const WAVE=ramp([[0.1,hx('#0b2e46')],[0.6,hx('#11506f')],[2,hx('#16768f')],[5,hx('#1c9da4')],
+  [9,hx('#3fc39b')],[14,hx('#a4d861')],[20,hx('#f2d13c')],[28,hx('#ff8f2b')],
+  [36,hx('#ea3c22')],[48,hx('#78102c')]]);
+const ARR=ramp([[0,hx('#7a0f2a')],[900,hx('#e0452a')],[1800,hx('#ff9a24')],[3600,hx('#e8e23c')],
+  [7200,hx('#6fd18e')],[10800,hx('#2ab0b8')],[18000,hx('#1d5d8c')],[28800,hx('#123249')]]);
+const MMIC=[[1,'#eef3f6'],[3,'#bfccff'],[4,'#a0e6ff'],[5,'#80ffff'],[6,'#7aff93'],[7,'#ffff00'],
+  [8,'#ffc800'],[9,'#ff9100'],[10,'#ff3020'],[12,'#8c1010']];
+const MMIR=ramp(MMIC.map(c=>[c[0],hx(c[1])]));
+const mmiHex=m=>{const c=MMIR(m);return '#'+c.map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');};
+const DEF=ramp([[-5,hx('#2b3f8f')],[-2,hx('#4a7fc4')],[-0.4,hx('#9dc6e0')],[0,hx('#0d2130')],
+  [0.4,hx('#e9c98a')],[3,hx('#e07a2c')],[8,hx('#c22a22')],[14,hx('#6d0d18')]]);
+
+/* ---------- proyeksi ---------- */
+const lon2x=l=>(l-g.lonW)/g.cs, lat2y=l=>NY-1-(l-g.latS)/g.cs;
+const x2lon=x=>g.lonW+(x+0.5)*g.cs, y2lat=y=>g.latS+(NY-1-y+0.5)*g.cs;
+const idx=(x,y)=>{const i=Math.round(x),j=NY-1-Math.round(y);
+  return (i<0||j<0||i>=NX||j>=NY)?-1:j*NX+i;};
+
+/* ---------- kanvas ---------- */
+const cv=$('#map'), ctx=cv.getContext('2d');
+const base=document.createElement('canvas'); base.width=NX; base.height=NY;
+const bctx=base.getContext('2d');
+const overlay=document.createElement('canvas'); overlay.width=NX; overlay.height=NY;
+const octx=overlay.getContext('2d');
+function drawBase(){
+  const img=bctx.createImageData(NX,NY), p=img.data;
+  for(let y=0;y<NY;y++){ const j=NY-1-y;
+    for(let x=0;x<NX;x++){ const k=j*NX+x, e=elev[k], o=(y*NX+x)*4;
+      const c = e<0 ? SEA(-e) : LAND(e);
+      let sh=1;
+      if(e>=0&&x>0&&j<NY-1){ const dz=elev[k]-elev[(j+1)*NX+x-1]; sh=1+Math.max(-0.32,Math.min(0.32,dz/420)); }
+      p[o]=c[0]*sh; p[o+1]=c[1]*sh; p[o+2]=c[2]*sh; p[o+3]=255; } }
+  bctx.putImageData(img,0,0);
+}
+drawBase();
+
+/* ---------- lapisan statis: semua sudah dihitung, nol beban di HP ---------- */
+let layer='etamax';
+function drawOverlay(){
+  const img=octx.createImageData(NX,NY), p=img.data;
+  for(let y=0;y<NY;y++){ const j=NY-1-y;
+    for(let x=0;x<NX;x++){ const k=j*NX+x, o=(y*NX+x)*4;
+      let c=null,a=0;
+      if(layer==='etamax'){ const v=etaMaxI[k]/100;
+        if(v>0.12){ c=WAVE(v); a=Math.min(238,96+142*Math.min(1,(v-0.1)/16)); } }
+      else if(layer==='arrival'){ const t=tArrI[k];
+        if(t>=0&&elev[k]<0){ const s=t*10; c=ARR(s); a=190;
+          const band=Math.floor(s/900);
+          if(Math.abs(s/900-band)<0.055) a=255; } }
+      else if(layer==='mmi'){ if(elev[k]>=0){ c=MMIR(MMII[k]/10); a=205; } }
+      else if(layer==='deform'){ const v=DEFI[k]/100; if(Math.abs(v)>0.08){ c=DEF(v); a=215; } }
+      if(c){ p[o]=c[0];p[o+1]=c[1];p[o+2]=c[2];p[o+3]=a; } } }
+  octx.putImageData(img,0,0);
+}
+
+/* ---------- animasi ---------- */
+let frames=[], frameT=[], FW=NX>>1, FH=NY>>1;
+let liveEta=null, playIdx=-1, playing=false, raf=0;
+const anim=document.createElement('canvas'); anim.width=FW; anim.height=FH;
+let actx=anim.getContext('2d');
+function setFrameSize(w,h){ if(w===FW&&h===FH) return;
+  FW=w; FH=h; anim.width=w; anim.height=h; actx=anim.getContext('2d'); }
+function drawAnimFrom(arr){
+  const img=actx.createImageData(FW,FH), p=img.data, sc=NX/FW;
+  for(let y=0;y<FH;y++){ const j=FH-1-y;
+    for(let x=0;x<FW;x++){ const k=j*FW+x, o=(y*FW+x)*4;
+      const v=arr[k]*0.01, av=Math.abs(v);
+      const ei=Math.min(NX-1,Math.round(x*sc)), ej=Math.min(NY-1,Math.round(j*sc));
+      const dep=-elev[ej*NX+ei];
+      if(av<0.08||(dep<=0&&v<0.15)){ p[o+3]=0; continue; }
+      const c = v>0 ? WAVE(v) : lerp(hx('#0d2a3d'),hx('#5f86c9'),Math.min(1,av/3));
+      p[o]=c[0];p[o+1]=c[1];p[o+2]=c[2];p[o+3]=Math.min(240,120+130*Math.min(1,av/2.5)); } }
+  actx.putImageData(img,0,0);
+}
+
+/* ---------- gambar ulang ---------- */
+const CITY=D.cities;
+const LABEL={'Jakarta Pusat':'JAKARTA','Merak':'Merak','Labuan':'Labuan','Ujung Kulon':'Ujung Kulon',
+ 'Kota Serang':'Serang','Bandar Lampung':'B. Lampung','Krui':'Krui','Bandung':'Bandung',
+ 'Pelabuhan Ratu':'Pel. Ratu','Pangandaran':'Pangandaran','Cilacap':'Cilacap',
+ 'Kota Bengkulu':'Bengkulu','Yogyakarta':'Yogyakarta','Kota Bogor':'Bogor','Bakauheni':'Bakauheni'};
+function render(){
+  ctx.imageSmoothingEnabled=false; ctx.drawImage(base,0,0); ctx.imageSmoothingEnabled=true;
+  if(playIdx>=0||liveEta) ctx.drawImage(anim,0,0,NX,NY);
+  else ctx.drawImage(overlay,0,0);
+  ctx.strokeStyle='rgba(255,255,255,.34)'; ctx.lineWidth=1; ctx.setLineDash([5,4]); ctx.beginPath();
+  D.trench.forEach((t,i)=>{const X=lon2x(t[0]),Y=lat2y(t[1]); i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(255,96,60,.92)'; ctx.lineWidth=2.4; ctx.beginPath();
+  F.subs.forEach((s,i)=>{const X=lon2x(s.p0[0]),Y=lat2y(s.p0[1]); i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});
+  ctx.stroke();
+  if(layer==='seis'){
+    for(const q of D.quakes){ const X=lon2x(q[0]),Y=lat2y(q[1]);
+      if(X<0||Y<0||X>NX||Y>NY) continue;
+      const r=Math.max(.7,(q[3]-4.2)*1.55), dp=q[2];
+      ctx.beginPath(); ctx.arc(X,Y,r,0,6.2832);
+      ctx.fillStyle = dp<40?'rgba(255,92,60,.62)': dp<150?'rgba(255,190,60,.55)':'rgba(120,200,255,.5)';
+      ctx.fill();
+      if(q[3]>=7){ ctx.strokeStyle='rgba(255,255,255,.8)'; ctx.lineWidth=.8; ctx.stroke(); } }
+  }
+  const hxp=lon2x(F.hypoLon), hyp=lat2y(F.hypoLat);
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.6; ctx.beginPath();
+  ctx.moveTo(hxp-7,hyp); ctx.lineTo(hxp+7,hyp); ctx.moveTo(hxp,hyp-7); ctx.lineTo(hxp,hyp+7); ctx.stroke();
+  ctx.beginPath(); ctx.arc(hxp,hyp,5,0,6.2832); ctx.strokeStyle='#ff5c3c'; ctx.lineWidth=2; ctx.stroke();
+  ctx.font='500 9px Archivo, sans-serif'; ctx.textBaseline='middle';
+  for(const c of CITY){
+    const X=lon2x(c[1]),Y=lat2y(c[2]); if(X<0||Y<0||X>NX||Y>NY) continue;
+    const nm=LABEL[c[0]];
+    ctx.beginPath(); ctx.arc(X,Y,nm?2.6:1.5,0,6.2832);
+    ctx.fillStyle=c[4]==='J'?'#63dbe9':'rgba(255,255,255,.85)'; ctx.fill();
+    if(nm){ ctx.fillStyle='rgba(0,0,0,.66)'; ctx.fillText(nm,X+4.7,Y+.7);
+      ctx.fillStyle=c[4]==='J'?'#a9ecf4':'rgba(255,255,255,.95)'; ctx.fillText(nm,X+4,Y); } }
+}
+
+/* ---------- legenda ---------- */
+const LEGENDS={
+  etamax:{t:'Tinggi gelombang maksimum',f:WAVE,d:[0.1,48],ticks:['0,1 m','0,5','2','10','48 m'],log:true},
+  arrival:{t:'Waktu tiba gelombang pertama',f:ARR,d:[0,28800],ticks:['0','30 mnt','1 j','3 j','8 j']},
+  mmi:{t:'Intensitas guncangan (skala MMI)',f:MMIR,d:[3,10],ticks:['III','V','VII','VIII','X']},
+  deform:{t:'Pergerakan tanah permanen',f:DEF,d:[-5,14],ticks:['-5 m','-2','0','+6','+14 m']},
+  seis:{t:'Gempa nyata 1970–2026 (USGS)',f:null,d:[0,1],ticks:['dangkal','menengah','dalam']}
+};
+function setLegend(){
+  const L=LEGENDS[layer]; $('#legTitle').textContent=L.t;
+  const el=$('#legRamp');
+  if(!L.f) el.style.background='linear-gradient(90deg,#ff5c3c,#ffbe3c,#78c8ff)';
+  else{ const st=[]; for(let i=0;i<=24;i++){ const t=i/24;
+      const v=L.log?L.d[0]*Math.pow(L.d[1]/L.d[0],t):L.d[0]+(L.d[1]-L.d[0])*t;
+      const c=L.f(v); st.push('rgb('+c.map(Math.round).join(',')+') '+(t*100).toFixed(0)+'%'); }
+    el.style.background='linear-gradient(90deg,'+st.join(',')+')'; }
+  $('#legTicks').innerHTML=L.ticks.map(t=>'<span>'+t+'</span>').join('');
+}
+
+/* ---------- baca titik ---------- */
+function probe(e){
+  const r=cv.getBoundingClientRect();
+  const x=(e.clientX-r.left)/r.width*NX, y=(e.clientY-r.top)/r.height*NY;
+  const k=idx(x,y); if(k<0) return;
+  const lon=x2lon(Math.round(x)), lat=y2lat(Math.round(y));
+  const e0=elev[k], wave=etaMaxI[k]/100, ta=tArrI[k];
+  let s=Math.abs(lat).toFixed(2)+'°LS '+lon.toFixed(2)+'°BT · ';
+  s+= e0<0 ? 'laut '+nf(-e0)+' m' : 'darat '+nf(e0)+' m';
+  if(e0>=0) s+=' · MMI '+romOf(MMII[k]/10)+' · Vs30 '+nf(VS30U[k]*4)+' m/s';
+  if(wave>0.12) s+=' · gelombang '+wave.toFixed(1)+' m';
+  if(ta>=0) s+=' · tiba '+Math.round(ta*10/60)+' mnt';
+  $('#cursor').textContent=s;
+}
+cv.addEventListener('pointermove',e=>{ if(e.pointerType!=='touch') probe(e); });
+cv.addEventListener('pointerdown',probe);
+cv.addEventListener('pointerleave',()=>{$('#cursor').textContent='sentuh peta untuk membaca titik';});
+
+/* ---------- pengukur kota ---------- */
+const gaugeCities=['Jakarta Utara','Kep. Seribu','Kota Tangerang','Merak','Kota Cilegon',
+  'Anyer','Labuan','Bakauheni','Bandar Lampung','Pelabuhan Ratu','Pangandaran','Cilacap'];
+const gEls={};
+function nearestSea(lon,lat){
+  const i0=Math.round((lon-g.lonW)/g.cs-0.5), j0=Math.round((lat-g.latS)/g.cs-0.5);
+  let best=j0*NX+i0,bd=1e9;
+  for(let dj=-7;dj<=7;dj++)for(let di=-7;di<=7;di++){
+    const i=i0+di,j=j0+dj; if(i<0||j<0||i>=NX||j>=NY)continue;
+    const k=j*NX+i; if(elev[k]<-1&&elev[k]>-400){const d=di*di+dj*dj; if(d<bd){bd=d;best=k;}}}
+  return best;
+}
+function colorOf(v){const c=WAVE(Math.max(v,0.11));return 'rgb('+c.map(Math.round).join(',')+')';}
+function buildGauges(){
+  const wrap=$('#gauges'); wrap.innerHTML='';
+  for(const name of gaugeCities){
+    const c=CITY.find(z=>z[0]===name); if(!c) continue;
+    const k=nearestSea(c[1],c[2]);
+    const row=document.createElement('div'); row.className='gauge';
+    row.innerHTML='<div class="grow"><span class="gname">'+c[0]+'</span><span class="gval">–</span></div>'+
+                  '<div class="bar"><i style="width:0%"></i></div>';
+    wrap.appendChild(row);
+    gEls[name]={k,val:row.querySelector('.gval'),bar:row.querySelector('.bar i'),
+                max:etaMaxI[k]/100, ta:tArrI[k]};
+  }
+  resetGauges();
+}
+function resetGauges(){
+  for(const n in gEls){const G=gEls[n];
+    G.val.textContent=G.max>0.12?('maks '+G.max.toFixed(1)+' m · '+(G.ta>=0?Math.round(G.ta*10/60)+' mnt':'–')):'–';
+    G.bar.style.width=Math.min(100,G.max/25*100)+'%';
+    G.bar.style.background=colorOf(G.max);}
+}
+function updateGaugesLive(arr){
+  const sc=NX/FW;
+  for(const n in gEls){const G=gEls[n];
+    const j=Math.floor(Math.floor(G.k/NX)/sc), i=Math.floor((G.k%NX)/sc);
+    const v=(arr[Math.min(arr.length-1,j*FW+i)]||0)/100;
+    G.val.textContent=(v>=0?'+':'')+v.toFixed(2)+' m';
+    G.bar.style.width=Math.min(100,Math.abs(v)/12*100)+'%';
+    G.bar.style.background=v>0?colorOf(v):'#5f86c9';}
+}
+
+/* ---------- simulasi ---------- */
+let worker=null, totalFrames=0;
+const HOURS=6;
+const SMALL=matchMedia('(max-width:820px)').matches||(navigator.hardwareConcurrency||4)<=4;
+function downsample(){
+  const nx2=NX>>1, ny2=NY>>1, e=new Int16Array(nx2*ny2);
+  for(let j=0;j<ny2;j++)for(let i=0;i<nx2;i++){
+    const a=elev[(j*2)*NX+i*2], b2=elev[(j*2)*NX+i*2+1],
+          c=elev[(j*2+1)*NX+i*2], d2=elev[(j*2+1)*NX+i*2+1];
+    e[j*nx2+i]=Math.round((a+b2+c+d2)/4);}
+  return {g:{nx:nx2,ny:ny2,cs:g.cs*2,lonW:g.lonW,latS:g.latS},e};
+}
+const GLUE=[
+"self.onmessage=function(ev){var d=ev.data;",
+" var g=d.g, elev=new Int16Array(d.elev), F=buildFault(d.trench,d.fault);",
+" var S=makeSim(g,elev), DC=deformCoarse(g,F,4);",
+" var N=g.nx*g.ny, cN=DC.cnx*DC.cny;",
+" var prevC=new Float32Array(cN), curC=new Float32Array(cN);",
+" var dC=new Float32Array(cN), dF=new Float32Array(N);",
+" var vR=2500, rise=45;",
+" var rupDur=Math.max(F.hypoS-F.a,F.b-F.hypoS)/vR+rise;",
+" var steps=Math.round(d.hours*3600/d.dt), FW=g.nx>>1, FH=g.ny>>1;",
+" postMessage({type:'meta',steps:steps,every:d.every,fw:FW,fh:FH});",
+" for(var s=0;s<steps;s++){",
+"  var t=s*d.dt;",
+"  if(t<=rupDur+d.dt){",
+"   curC.fill(0);",
+"   for(var m=0;m<F.subs.length;m++){var fr=rupFrac(F,m,t,vR,rise); if(fr<=0)continue;",
+"    var fl=DC.fields[m]; for(var k=0;k<cN;k++) curC[k]+=fr*fl[k];}",
+"   for(var k2=0;k2<cN;k2++) dC[k2]=curC[k2]-prevC[k2];",
+"   coarseToFine(g,DC,dC,dF);",
+"   for(var k3=0;k3<N;k3++) S.eta[k3]+=dF[k3];",
+"   var tmp=prevC; prevC=curC; curC=tmp;",
+"  }",
+"  S.step(d.dt);",
+"  if(s%d.every===0){",
+"   var buf=new Int16Array(FW*FH);",
+"   for(var jj=0;jj<FH;jj++){var j2=Math.min(g.ny-1,jj*2);",
+"    for(var ii=0;ii<FW;ii++){var i2=Math.min(g.nx-1,ii*2);",
+"     buf[jj*FW+ii]=Math.max(-32000,Math.min(32000,Math.round(S.eta[j2*g.nx+i2]*100)));}}",
+"   postMessage({type:'frame',t:t,step:s,buf:buf.buffer},[buf.buffer]);",
+"  }",
+" }",
+" var em=new Int16Array(N), ta=new Int16Array(N);",
+" for(var q=0;q<N;q++){em[q]=Math.max(-32000,Math.min(32000,Math.round(S.etaMax[q]*100)));",
+"  ta[q]=S.tArr[q]<0?-1:Math.min(32000,Math.round(S.tArr[q]/10));}",
+" postMessage({type:'done',etaMax:em.buffer,tArr:ta.buffer,nx:g.nx,ny:g.ny},[em.buffer,ta.buffer]);",
+"};"].join("\n");
+function startSim(){
+  if(worker){try{worker.terminate();}catch(e){} worker=null;}
+  frames=[]; frameT=[]; playIdx=-1; liveEta=null; playing=false;
+  $('#run').disabled=true; $('#pause').disabled=false; $('#scrub').disabled=true;
+  $('#progress').textContent='menyiapkan…';
+  const fast=$('#qual').value==='fast';
+  let sg=g, se=elev, dt=4.2, every=12;
+  if(fast){ const r=downsample(); sg=r.g; se=r.e; dt=8.4; every=6; }
+  const job={g:sg,trench:D.trench,
+    fault:{dipDeg:13,topDepth:6000,widthKm:200,nSub:44,slipMean:SLIP,hypoFrac:0.445},
+    dt:dt,hours:HOURS,every:every};
+  const handle=m=>{
+    if(m.type==='meta'){ totalFrames=Math.ceil(m.steps/m.every);
+      setFrameSize(m.fw,m.fh); $('#scrub').max=Math.max(1,totalFrames-1); }
+    else if(m.type==='frame'){
+      const arr=new Int16Array(m.buf);
+      frames.push(arr); frameT.push(m.t);
+      playIdx=frames.length-1; liveEta=arr;
+      drawAnimFrom(arr); render();
+      $('#clock').innerHTML='T + <b>'+hhmmss(m.t)+'</b>';
+      $('#scrub').value=playIdx;
+      $('#progress').textContent='menghitung · '+Math.round(100*frames.length/totalFrames)+'%';
+      updateGaugesLive(arr);
+    } else if(m.type==='done'){
+      if(m.nx===NX){ etaMaxI=new Int16Array(m.etaMax); tArrI=new Int16Array(m.tArr);
+        for(const n in gEls){gEls[n].max=etaMaxI[gEls[n].k]/100; gEls[n].ta=tArrI[gEls[n].k];} }
+      $('#scrub').disabled=false; $('#run').disabled=false; $('#pause').disabled=true;
+      $('#progress').textContent='selesai · '+frames.length+' bingkai · geser untuk menelusuri';
+      playFrom(0);
+    }
+  };
+  let ok=false;
+  try{
+    const src=document.getElementById('phys').textContent+"\n"+GLUE;
+    worker=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));
+    worker.onmessage=e=>handle(e.data);
+    worker.onerror=()=>{ if(!frames.length){ try{worker.terminate();}catch(e){} worker=null; mainSim(job,se,handle);} };
+    const ev=new Int16Array(se);
+    worker.postMessage(Object.assign({elev:ev.buffer},job),[ev.buffer]);
+    ok=true;
+  }catch(err){ ok=false; }
+  if(!ok) mainSim(job,se,handle);
+}
+function mainSim(d,se,handle){
+  const F2=PHYS.buildFault(d.trench,d.fault), S=PHYS.makeSim(d.g,se);
+  const DC=PHYS.deformCoarse(d.g,F2,4), cN=DC.cnx*DC.cny, n2=d.g.nx*d.g.ny;
+  let prevC=new Float32Array(cN), curC=new Float32Array(cN);
+  const dC=new Float32Array(cN), dF=new Float32Array(n2);
+  const vR=2500, rise=45, rupDur=Math.max(F2.hypoS-F2.a,F2.b-F2.hypoS)/vR+rise;
+  const steps=Math.round(d.hours*3600/d.dt), fw=d.g.nx>>1, fh=d.g.ny>>1;
+  handle({type:'meta',steps:steps,every:d.every,fw:fw,fh:fh});
+  let s=0;
+  const chunk=()=>{
+    const end=Math.min(steps,s+40);
+    for(;s<end;s++){
+      const t=s*d.dt;
+      if(t<=rupDur+d.dt){
+        curC.fill(0);
+        for(let m=0;m<F2.subs.length;m++){const fr=PHYS.rupFrac(F2,m,t,vR,rise); if(fr<=0)continue;
+          const fl=DC.fields[m]; for(let k=0;k<cN;k++) curC[k]+=fr*fl[k];}
+        for(let k=0;k<cN;k++) dC[k]=curC[k]-prevC[k];
+        PHYS.coarseToFine(d.g,DC,dC,dF);
+        for(let k=0;k<n2;k++) S.eta[k]+=dF[k];
+        const tm=prevC; prevC=curC; curC=tm;
+      }
+      S.step(d.dt);
+      if(s%d.every===0){
+        const buf=new Int16Array(fw*fh);
+        for(let jj=0;jj<fh;jj++){const j2=Math.min(d.g.ny-1,jj*2);
+          for(let ii=0;ii<fw;ii++){const i2=Math.min(d.g.nx-1,ii*2);
+            buf[jj*fw+ii]=Math.max(-32000,Math.min(32000,Math.round(S.eta[j2*d.g.nx+i2]*100)));}}
+        handle({type:'frame',t:t,step:s,buf:buf.buffer});
+      }
+    }
+    if(s<steps) setTimeout(chunk,0);
+    else{
+      const em=new Int16Array(n2), ta=new Int16Array(n2);
+      for(let q=0;q<n2;q++){em[q]=Math.max(-32000,Math.min(32000,Math.round(S.etaMax[q]*100)));
+        ta[q]=S.tArr[q]<0?-1:Math.min(32000,Math.round(S.tArr[q]/10));}
+      handle({type:'done',etaMax:em.buffer,tArr:ta.buffer,nx:d.g.nx,ny:d.g.ny});
+    }
+  };
+  setTimeout(chunk,0);
+}
+function showFrame(i){
+  if(i<0||i>=frames.length) return;
+  playIdx=i; liveEta=frames[i];
+  drawAnimFrom(frames[i]); render();
+  $('#clock').innerHTML='T + <b>'+hhmmss(frameT[i])+'</b>';
+  updateGaugesLive(frames[i]);
+}
+function playFrom(i){
+  playing=true; let cur=i;
+  $('#pause').disabled=false; $('#pause').textContent='Jeda';
+  cancelAnimationFrame(raf);
+  const tick=()=>{ if(!playing) return;
+    showFrame(cur); $('#scrub').value=cur;
+    cur++; if(cur>=frames.length){ playing=false; $('#pause').textContent='Ulangi'; return; }
+    raf=requestAnimationFrame(tick); };
+  tick();
+}
+$('#run').addEventListener('click',startSim);
+$('#pause').addEventListener('click',()=>{
+  if(!frames.length) return;
+  if(playing){ playing=false; $('#pause').textContent='Lanjut'; }
+  else playFrom(playIdx>=frames.length-1?0:playIdx);
+});
+$('#scrub').addEventListener('input',e=>{ playing=false; $('#pause').textContent='Lanjut'; showFrame(+e.target.value); });
+$$('#layers button').forEach(b=>b.addEventListener('click',()=>{
+  $$('#layers button').forEach(x=>x.setAttribute('aria-pressed','false'));
+  b.setAttribute('aria-pressed','true'); layer=b.dataset.layer;
+  playing=false; playIdx=-1; liveEta=null;
+  $('#clock').innerHTML='T + <b>00:00:00</b>';
+  resetGauges(); setLegend(); drawOverlay(); render();
+}));
+$('#qual').value=SMALL?'fast':'full';

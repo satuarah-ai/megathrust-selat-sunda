@@ -32,6 +32,7 @@ function raw(msg){const i=++id;
   const {sessionId}=await raw({method:'Target.attachToTarget',params:{targetId,flatten:true}});
   const S=(method,params)=>raw({sessionId,method,params:params||{}});
   await S('Page.enable'); await S('Runtime.enable'); await S('Log.enable');
+  await S('Network.enable'); await S('Network.setCacheDisabled',{cacheDisabled:true});
   await S('Emulation.setDeviceMetricsOverride',
     {width:W,height:H,deviceScaleFactor:+(process.env.DSF||1),mobile:W<700});
   await S('Page.navigate',{url:URL_});
